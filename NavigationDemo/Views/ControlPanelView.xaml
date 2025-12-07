@@ -1,0 +1,65 @@
+<UserControl x:Class="NavigationDemo.Views.ControlPanelView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="#F5F5F5" BorderBrush="Gray" BorderThickness="1" Padding="15">
+        <StackPanel>
+            <TextBlock Text="Navigation Control Panel" 
+                      FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+            
+            <!-- Navigation Buttons -->
+            <GroupBox Header="4-Layer Navigation" Margin="0,0,0,10">
+                <StackPanel>
+                    <Button Content="→ Level3A (Shell/Level1/Level2/Level3A)" 
+                           Command="{Binding NavigateCommand}"
+                           CommandParameter="Shell/Level1/Level2/Level3A"
+                           Margin="0,3"/>
+                    <Button Content="→ Level3B (Shell/Level1/Level2/Level3B)" 
+                           Command="{Binding NavigateCommand}"
+                           CommandParameter="Shell/Level1/Level2/Level3B"
+                           Margin="0,3"/>
+                    <Button Content="→ Level3C (Shell/Level1/Level2Alt/Level3C)" 
+                           Command="{Binding NavigateCommand}"
+                           CommandParameter="Shell/Level1/Level2Alt/Level3C"
+                           Margin="0,3"/>
+                    <Button Content="→ Level3D (Shell/Level1/Level2Alt/Level3D)" 
+                           Command="{Binding NavigateCommand}"
+                           CommandParameter="Shell/Level1/Level2Alt/Level3D"
+                           Margin="0,3"/>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Partial Navigation -->
+            <GroupBox Header="Partial Navigation" Margin="0,0,0,10">
+                <StackPanel>
+                    <Button Content="→ Level2 (Shell/Level1/Level2)" 
+                           Command="{Binding NavigateCommand}"
+                           CommandParameter="Shell/Level1/Level2"
+                           Margin="0,3"/>
+                    <Button Content="→ Level1 (Shell/Level1)" 
+                           Command="{Binding NavigateCommand}"
+                           CommandParameter="Shell/Level1"
+                           Margin="0,3"/>
+                </StackPanel>
+            </GroupBox>
+            
+            <!-- Reset -->
+            <GroupBox Header="Reset" Margin="0,0,0,10">
+                <Button Content="↺ Reset to Home (Shell)" 
+                       Command="{Binding NavigateCommand}"
+                       CommandParameter="Shell"
+                       Background="#FFE082"
+                       Margin="0,3"/>
+            </GroupBox>
+            
+            <!-- Result Display -->
+            <GroupBox Header="Result">
+                <Border Background="White" Padding="10" BorderBrush="LightGray" BorderThickness="1">
+                    <TextBlock Text="{Binding LastResult}" 
+                              TextWrapping="Wrap" 
+                              FontFamily="Consolas" 
+                              FontSize="10"/>
+                </Border>
+            </GroupBox>
+        </StackPanel>
+    </Border>
+</UserControl>

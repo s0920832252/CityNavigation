@@ -1,0 +1,124 @@
+# Visual Studio / .NET .gitignore
+# See https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
+
+## Visual Studio
+.vs/
+*.vcxproj.user
+*.user
+*.userosscache
+*.suo
+*.tmp
+*.userprefs
+*.dbmdl
+*.opendb
+
+# Build results
+[Bb]in/
+[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
+
+# Backup & report files
+*.log
+*.err
+*.orig
+*.rej
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+# The packages folder can be ignored because it will be restored.
+
+# NuGet v3's project.json files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# Coverage results
+*.coverage
+*.coveragexml
+coverage.*
+*.coveragejson
+
+# Test Results
+TestResults/
+**/TestResults/
+*.trx
+
+# StyleCop
+StyleCopReport.xml
+
+# Visual Studio Code
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Rider
+.idea/
+*.sln.iml
+
+# Rider and ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Dotnet local tools
+.dotnet/tools/
+
+# Dotnet publish output
+publish/
+
+# IIS Express
+/.vs/**/applicationhost.config
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# JetBrains Rider
+.idea/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+ehthumbs.db
+Icon
+
+# Logs
+*.log
+
+# Secret storage (dotnet user-secrets)
+secrets.json
+
+# Local DB
+*.mdf
+*.ldf
+
+# Optional: Ignore compiled native binaries
+*.dll
+*.exe
+
+# Keep README, license etc
+
+# End of .gitignore

@@ -1,0 +1,30 @@
+<UserControl x:Class="NavigationDemo.Views.Level2View"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:nav="clr-namespace:NavigationLib.FrameworksAndDrivers;assembly=NavigationLib"
+             xmlns:local="clr-namespace:NavigationDemo.Views">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#C8E6C9" Padding="10" Margin="0,0,0,5">
+            <StackPanel>
+                <TextBlock Text="Level 2 Layer (from L1-A)" FontSize="13" FontWeight="Bold"/>
+                <TextBlock Text="{Binding CurrentSegment}" FontSize="9" Foreground="DarkGreen" Margin="0,2,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- TabControl for Level3 -->
+        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}">
+            <TabItem Header="L2-A">
+                <local:Level3View x:Name="Level3A" nav:Region.Name="Level3A"/>
+            </TabItem>
+            <TabItem Header="L2-B">
+                <local:Level3View x:Name="Level3B" nav:Region.Name="Level3B"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
