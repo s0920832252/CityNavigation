@@ -53,6 +53,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UseCases\NavigationService.cs" />
     <Compile Include="UseCases\PathValidator.cs" />
+    <Compile Include="UseCases\RegionLifecycleManager.cs" />
     <Compile Include="UseCases\RegionStore.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -32,10 +32,21 @@ namespace NavigationLib.Adapters
         /// <returns>IDispatcher 介面實例。</returns>
         IDispatcher GetDispatcher();
 
-        /// <summary>
-        /// 檢查此元素是否仍在視覺樹中（用於 Unloaded 檢查）。
-        /// </summary>
-        /// <returns>若元素仍在視覺樹中則為 true，否則為 false。</returns>
-        bool IsInVisualTree();
-    }
+    /// <summary>
+    /// 檢查此元素是否仍在視覺樹中（用於 Unloaded 檢查）。
+    /// </summary>
+    /// <returns>若元素仍在視覺樹中則為 true，否則為 false。</returns>
+    bool IsInVisualTree();
+
+    /// <summary>
+    /// 檢查此 Region 元素是否與另一個 Region 元素包裝相同的底層 UI 元素。
+    /// </summary>
+    /// <param name="other">要比對的另一個 Region 元素。</param>
+    /// <returns>若兩者包裝相同的底層元素則為 true，否則為 false。</returns>
+    /// <remarks>
+    /// 此方法用於判斷兩個不同的 IRegionElement 實例是否代表同一個 UI 元素，
+    /// 避免重複註冊相同的元素到 Region。
+    /// </remarks>
+    bool IsSameUnderlyingElement(IRegionElement other);
+}
 }

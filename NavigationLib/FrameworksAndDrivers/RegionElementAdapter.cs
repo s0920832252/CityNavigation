@@ -14,7 +14,6 @@ namespace NavigationLib.FrameworksAndDrivers
     {
         private readonly FrameworkElement _element;
         private readonly DispatcherAdapter _dispatcher;
-        private string _registeredRegionName; // 記錄註冊的 region 名稱
         private bool _disposed;
 
         /// <summary>
@@ -25,9 +24,6 @@ namespace NavigationLib.FrameworksAndDrivers
         {
             _element = element ?? throw new ArgumentNullException(nameof(element));
             _dispatcher = new DispatcherAdapter(element.Dispatcher);
-            
-            // 訂閱 Unloaded 事件（使用弱事件模式）
-            UnloadedEventManager.AddHandler(_element, OnElementUnloaded);
         }
 
         /// <summary>
@@ -39,34 +35,27 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        /// 設定此 adapter 已註冊的 region 名稱（供 Unloaded 時自動解除註冊使用）。
+        /// 訂閱 Unloaded 事件（由 RegionLifecycleManager 使用）。
         /// </summary>
-        internal void SetRegisteredRegionName(string regionName)
+        /// <param name="handler">事件處理器。</param>
+        internal void SubscribeUnloaded(EventHandler<RoutedEventArgs> handler)
         {
-            _registeredRegionName = regionName;
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
+
+            UnloadedEventManager.AddHandler(_element, handler);
         }
 
         /// <summary>
-        /// 元素 Unloaded 時的處理器（自動從 RegionStore 解除註冊）。
+        /// 取消訂閱 Unloaded 事件。
         /// </summary>
-        private void OnElementUnloaded(object sender, RoutedEventArgs e)
+        /// <param name="handler">事件處理器。</param>
+        internal void UnsubscribeUnloaded(EventHandler<RoutedEventArgs> handler)
         {
-            // 確認真的離開視覺樹
-            if (PresentationSource.FromVisual(_element) == null && !string.IsNullOrEmpty(_registeredRegionName))
-            {
-                Debug.WriteLine(string.Format("[RegionElementAdapter] Element unloaded, auto-unregistering region '{0}'.", _registeredRegionName));
-                
-                try
-                {
-                    RegionStore.Instance.Unregister(_registeredRegionName, this);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(string.Format("[RegionElementAdapter] Failed to auto-unregister region '{0}': {1}", _registeredRegionName, ex.Message));
-                }
-                
-                Dispose();
-            }
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
+
+            UnloadedEventManager.RemoveHandler(_element, handler);
         }
 
         /// <summary>
@@ -127,15 +116,27 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        /// 釋放資源並解除事件訂閱。
+        /// 檢查此 adapter 是否與另一個 adapter 包裝相同的 FrameworkElement。
+        /// </summary>
+        /// <param name="other">要比對的另一個 Region 元素。</param>
+        /// <returns>若兩者包裝相同的 FrameworkElement 實例則為 true，否則為 false。</returns>
+        public bool IsSameUnderlyingElement(IRegionElement other)
+        {
+            if (other is RegionElementAdapter otherAdapter)
+            {
+                return ReferenceEquals(_element, otherAdapter._element);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 釋放資源。
         /// </summary>
         public void Dispose()
         {
             if (_disposed)
                 return;
 
-            UnloadedEventManager.RemoveHandler(_element, OnElementUnloaded);
-            _registeredRegionName = null;
             _disposed = true;
         }
 

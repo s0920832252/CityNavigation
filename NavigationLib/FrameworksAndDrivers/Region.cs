@@ -15,8 +15,8 @@ namespace NavigationLib.FrameworksAndDrivers
     /// </para>
     /// <para>
     /// 使用 WeakEventManager 管理事件訂閱，避免記憶體洩漏。
-    /// RegionElementAdapter 儲存在 element 的 private AttachedProperty 上，
-    /// 並會自動訂閱 Unloaded 事件以主動從 RegionStore 解除註冊。
+    /// RegionStore 透過強引用管理 RegionElementAdapter 的生命週期，
+    /// 並由 RegionLifecycleManager 訂閱 Unloaded 事件以自動清理資源。
     /// </para>
     /// </remarks>
     /// <example>
@@ -39,16 +39,6 @@ namespace NavigationLib.FrameworksAndDrivers
                 typeof(string),
                 typeof(Region),
                 new PropertyMetadata(null, OnNameChanged));
-
-        /// <summary>
-        /// 私有附加屬性，用於儲存 RegionElementAdapter（取代 ConditionalWeakTable）。
-        /// </summary>
-        private static readonly DependencyProperty AdapterProperty =
-            DependencyProperty.RegisterAttached(
-                "Adapter",
-                typeof(RegionElementAdapter),
-                typeof(Region),
-                new PropertyMetadata(null));
 
         /// <summary>
         /// 取得元素的 Region 名稱。
@@ -157,16 +147,8 @@ namespace NavigationLib.FrameworksAndDrivers
         {
             try
             {
-                // 嘗試取得現有 Adapter，若不存在則建立新的
-                RegionElementAdapter adapter = (RegionElementAdapter)element.GetValue(AdapterProperty);
-                if (adapter == null)
-                {
-                    adapter = new RegionElementAdapter(element);
-                    element.SetValue(AdapterProperty, adapter);
-                }
-                
-                // 設定 adapter 的註冊 region 名稱（供 Unloaded 時自動解除註冊）
-                adapter.SetRegisteredRegionName(regionName);
+                // 每次建立新的 adapter（RegionStore 會透過 IsSameUnderlyingElement 判斷是否重複）
+                var adapter = new RegionElementAdapter(element);
                 
                 RegionStore.Instance.Register(regionName, adapter);
                 Debug.WriteLine(string.Format("[Region] Registered region '{0}'.", regionName));
@@ -184,18 +166,9 @@ namespace NavigationLib.FrameworksAndDrivers
         {
             try
             {
-                // 嘗試從 AttachedProperty 取得對應的 Adapter
-                RegionElementAdapter adapter = (RegionElementAdapter)element.GetValue(AdapterProperty);
-                if (adapter != null)
-                {
-                    RegionStore.Instance.Unregister(regionName, adapter);
-                    
-                    // 清理 adapter 與移除 AttachedProperty
-                    adapter.Dispose();
-                    element.ClearValue(AdapterProperty);
-                    
-                    Debug.WriteLine(string.Format("[Region] Unregistered region '{0}'.", regionName));
-                }
+                // 直接呼叫 Unregister（RegionStore 會處理清理）
+                RegionStore.Instance.Unregister(regionName);
+                Debug.WriteLine(string.Format("[Region] Unregistered region '{0}'.", regionName));
             }
             catch (Exception ex)
             {

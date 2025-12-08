@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NavigationLib.Adapters;
+using NavigationLib.UseCases;
 
 namespace NavigationLib.UseCases
 {
@@ -60,6 +61,7 @@ namespace NavigationLib.UseCases
             new Lazy<RegionStore>(() => new RegionStore());
 
         private readonly Dictionary<string, IRegionElement> _regions;
+        private readonly RegionLifecycleManager _lifecycleManager;
         private readonly object _lock = new object();
 
         /// <summary>
@@ -90,6 +92,7 @@ namespace NavigationLib.UseCases
         private RegionStore()
         {
             _regions = new Dictionary<string, IRegionElement>(StringComparer.OrdinalIgnoreCase);
+            _lifecycleManager = new RegionLifecycleManager();
         }
 
         /// <summary>
@@ -124,32 +127,30 @@ namespace NavigationLib.UseCases
 
             lock (_lock)
             {
-                // 檢查是否已存在
-                if (_regions.TryGetValue(regionName, out IRegionElement existingElement))
+            // 檢查是否已存在
+            if (_regions.TryGetValue(regionName, out IRegionElement existingElement))
+            {
+                // 已存在，檢查是否為相同的底層元素
+                if (existingElement.IsSameUnderlyingElement(element))
                 {
-                    // 已存在
-                    if (ReferenceEquals(existingElement, element))
-                    {
-                        // 相同實例，忽略（idempotent）
-                        Debug.WriteLine(string.Format("[RegionStore] Region '{0}' already registered with the same instance. Ignoring duplicate registration.", regionName));
-                        return;
-                    }
-                    else
-                    {
-                        // 不同實例，更新並記錄警告
-                        Debug.WriteLine(string.Format("[RegionStore] Warning: Region '{0}' is being re-registered with a different element. Updating registration.", regionName));
-                        _regions[regionName] = element;
-                        shouldRaiseEvent = true;
-                        eventArgs = new RegionEventArgs(regionName, element);
-                    }
+                    // 相同底層元素，忽略（idempotent）
+                    Debug.WriteLine(string.Format("[RegionStore] Region '{0}' already registered with the same element. Ignoring duplicate registration.", regionName));
+                    return;
                 }
                 else
                 {
-                    // 新註冊
-                    _regions[regionName] = element;
-                    shouldRaiseEvent = true;
-                    eventArgs = new RegionEventArgs(regionName, element);
+                    // 不同底層元素，先清理舊的
+                    Debug.WriteLine(string.Format("[RegionStore] Warning: Region '{0}' is being re-registered with a different element. Updating registration.", regionName));
+                    CleanupElement(regionName, existingElement);
                 }
+            }                // 註冊新的
+                _regions[regionName] = element;
+                
+                // 開始管理生命週期（訂閱 Unloaded 事件）
+                _lifecycleManager.ManageRegion(regionName, element, Unregister);
+                
+                shouldRaiseEvent = true;
+                eventArgs = new RegionEventArgs(regionName, element);
             }
 
             // 在鎖外觸發事件
@@ -163,40 +164,27 @@ namespace NavigationLib.UseCases
         /// 解除註冊一個 Region 元素。
         /// </summary>
         /// <param name="regionName">Region 的名稱。</param>
-        /// <param name="element">要解除註冊的元素（用於驗證）。</param>
         /// <exception cref="ArgumentNullException">
-        /// 當 <paramref name="regionName"/> 或 <paramref name="element"/> 為 null 時拋出。
+        /// 當 <paramref name="regionName"/> 為 null 時拋出。
         /// </exception>
         /// <remarks>
-        /// 只有當指定的元素與已註冊的元素為同一實例時，才會解除註冊。
-        /// 這避免了誤解除註冊其他元素。
+        /// 此方法會停止管理 region 的生命週期並清理資源。
         /// </remarks>
-        public void Unregister(string regionName, IRegionElement element)
+        public void Unregister(string regionName)
         {
             if (regionName == null)
                 throw new ArgumentNullException(nameof(regionName));
-            if (element == null)
-                throw new ArgumentNullException(nameof(element));
 
             bool shouldRaiseEvent = false;
             RegionEventArgs eventArgs = null;
 
             lock (_lock)
             {
-                if (_regions.TryGetValue(regionName, out IRegionElement existingElement))
+                if (_regions.TryGetValue(regionName, out IRegionElement element))
                 {
-                    if (ReferenceEquals(existingElement, element))
-                    {
-                        // 相同實例，移除
-                        _regions.Remove(regionName);
-                        shouldRaiseEvent = true;
-                        eventArgs = new RegionEventArgs(regionName, element);
-                    }
-                    else
-                    {
-                        // 不同實例，不移除（避免誤移除其他元素）
-                        Debug.WriteLine(string.Format("[RegionStore] Region '{0}' unregister attempt with different element instance. Ignoring.", regionName));
-                    }
+                    CleanupElement(regionName, element);
+                    shouldRaiseEvent = true;
+                    eventArgs = new RegionEventArgs(regionName, element);
                 }
             }
 
@@ -236,6 +224,29 @@ namespace NavigationLib.UseCases
         }
 
 
+
+        /// <summary>
+        /// 清理 region 元素與相關資源。
+        /// </summary>
+        /// <remarks>
+        /// 此方法應在鎖內呼叫。
+        /// </remarks>
+        private void CleanupElement(string regionName, IRegionElement element)
+        {
+            // 停止管理生命週期（取消 Unloaded 訂閱）
+            _lifecycleManager.StopManaging(regionName);
+            
+            // 從字典移除
+            _regions.Remove(regionName);
+            
+            // 清理 adapter
+            if (element is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+            
+            Debug.WriteLine(string.Format("[RegionStore] Cleaned up region '{0}'.", regionName));
+        }
 
         /// <summary>
         /// 引發 RegionRegistered 事件。
