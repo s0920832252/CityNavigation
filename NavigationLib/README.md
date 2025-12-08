@@ -26,14 +26,15 @@ NavigationLib/
 │       └── NavigationException.cs
 ├── UseCases/                       # 應用邏輯
 │   ├── NavigationService.cs       # 導航服務（核心）
-│   ├── RegionStore.cs              # Region 註冊中心
+│   ├── RegionStore.cs              # Region 註冊中心（強引用）
+│   ├── RegionLifecycleManager.cs   # Region 生命週期管理器
 │   └── PathValidator.cs            # 路徑驗證器
 ├── Adapters/                       # 介面抽象
-│   ├── IRegionElement.cs           # 隔離 FrameworkElement
+│   ├── IRegionElement.cs           # 隔離 FrameworkElement（含 IsSameUnderlyingElement）
 │   └── IDispatcher.cs              # 隔離 Dispatcher
 └── FrameworksAndDrivers/           # WPF 實作
     ├── Region.cs                   # Region.Name 附加屬性
-    ├── RegionElementAdapter.cs     # IRegionElement 實作
+    ├── RegionElementAdapter.cs     # IRegionElement 實作（含 WeakEventManager）
     └── DispatcherAdapter.cs        # IDispatcher 實作
 ```
 
