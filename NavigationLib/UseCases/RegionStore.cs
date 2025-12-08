@@ -35,7 +35,7 @@ namespace NavigationLib.UseCases
 
     /// <summary>
     /// Region 註冊中心，負責管理所有已註冊的 Region。
-    /// 使用弱參考儲存 Region 元素，避免記憶體洩漏。
+    /// 使用強引用儲存 Region 元素，配合事件驅動清理機制避免記憶體洩漏。
     /// 此類別為執行緒安全的 Singleton。
     /// </summary>
     /// <remarks>
@@ -49,13 +49,17 @@ namespace NavigationLib.UseCases
     /// <item><description>若為不同的元素，將更新註冊到新的元素，並記錄警告以協助診斷</description></item>
     /// </list>
     /// </para>
+    /// <para>
+    /// 記憶體管理策略：使用強引用保證導航期間物件存在，但依賴 RegionElementAdapter 
+    /// 訂閱 Unloaded 事件並主動通知 RegionStore 移除，避免記憶體洩漏。
+    /// </para>
     /// </remarks>
     public sealed class RegionStore
     {
         private static readonly Lazy<RegionStore> _instance = 
             new Lazy<RegionStore>(() => new RegionStore());
 
-        private readonly Dictionary<string, WeakReference<IRegionElement>> _regions;
+        private readonly Dictionary<string, IRegionElement> _regions;
         private readonly object _lock = new object();
 
         /// <summary>
@@ -85,7 +89,7 @@ namespace NavigationLib.UseCases
 
         private RegionStore()
         {
-            _regions = new Dictionary<string, WeakReference<IRegionElement>>(StringComparer.OrdinalIgnoreCase);
+            _regions = new Dictionary<string, IRegionElement>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -120,34 +124,21 @@ namespace NavigationLib.UseCases
 
             lock (_lock)
             {
-                // 清理死引用
-                CleanupDeadReferences();
-
                 // 檢查是否已存在
-                if (_regions.TryGetValue(regionName, out WeakReference<IRegionElement> existingRef))
+                if (_regions.TryGetValue(regionName, out IRegionElement existingElement))
                 {
-                    if (existingRef.TryGetTarget(out IRegionElement existingElement))
+                    // 已存在
+                    if (ReferenceEquals(existingElement, element))
                     {
-                        // 已存在且仍活著
-                        if (ReferenceEquals(existingElement, element))
-                        {
-                            // 相同實例，忽略（idempotent）
-                            Debug.WriteLine(string.Format("[RegionStore] Region '{0}' already registered with the same instance. Ignoring duplicate registration.", regionName));
-                            return;
-                        }
-                        else
-                        {
-                            // 不同實例，更新並記錄警告
-                            Debug.WriteLine(string.Format("[RegionStore] Warning: Region '{0}' is being re-registered with a different element. Updating registration.", regionName));
-                            _regions[regionName] = new WeakReference<IRegionElement>(element);
-                            shouldRaiseEvent = true;
-                            eventArgs = new RegionEventArgs(regionName, element);
-                        }
+                        // 相同實例，忽略（idempotent）
+                        Debug.WriteLine(string.Format("[RegionStore] Region '{0}' already registered with the same instance. Ignoring duplicate registration.", regionName));
+                        return;
                     }
                     else
                     {
-                        // 弱參考已失效，更新
-                        _regions[regionName] = new WeakReference<IRegionElement>(element);
+                        // 不同實例，更新並記錄警告
+                        Debug.WriteLine(string.Format("[RegionStore] Warning: Region '{0}' is being re-registered with a different element. Updating registration.", regionName));
+                        _regions[regionName] = element;
                         shouldRaiseEvent = true;
                         eventArgs = new RegionEventArgs(regionName, element);
                     }
@@ -155,7 +146,7 @@ namespace NavigationLib.UseCases
                 else
                 {
                     // 新註冊
-                    _regions[regionName] = new WeakReference<IRegionElement>(element);
+                    _regions[regionName] = element;
                     shouldRaiseEvent = true;
                     eventArgs = new RegionEventArgs(regionName, element);
                 }
@@ -192,32 +183,21 @@ namespace NavigationLib.UseCases
 
             lock (_lock)
             {
-                if (_regions.TryGetValue(regionName, out WeakReference<IRegionElement> existingRef))
+                if (_regions.TryGetValue(regionName, out IRegionElement existingElement))
                 {
-                    if (existingRef.TryGetTarget(out IRegionElement existingElement))
+                    if (ReferenceEquals(existingElement, element))
                     {
-                        if (ReferenceEquals(existingElement, element))
-                        {
-                            // 相同實例，移除
-                            _regions.Remove(regionName);
-                            shouldRaiseEvent = true;
-                            eventArgs = new RegionEventArgs(regionName, element);
-                        }
-                        else
-                        {
-                            // 不同實例，不移除（避免誤移除其他元素）
-                            Debug.WriteLine(string.Format("[RegionStore] Region '{0}' unregister attempt with different element instance. Ignoring.", regionName));
-                        }
+                        // 相同實例，移除
+                        _regions.Remove(regionName);
+                        shouldRaiseEvent = true;
+                        eventArgs = new RegionEventArgs(regionName, element);
                     }
                     else
                     {
-                        // 弱參考已失效，移除
-                        _regions.Remove(regionName);
+                        // 不同實例，不移除（避免誤移除其他元素）
+                        Debug.WriteLine(string.Format("[RegionStore] Region '{0}' unregister attempt with different element instance. Ignoring.", regionName));
                     }
                 }
-
-                // 清理死引用
-                CleanupDeadReferences();
             }
 
             // 在鎖外觸發事件
@@ -245,43 +225,17 @@ namespace NavigationLib.UseCases
 
             lock (_lock)
             {
-                if (_regions.TryGetValue(regionName, out WeakReference<IRegionElement> weakRef))
+                if (_regions.TryGetValue(regionName, out IRegionElement target))
                 {
-                    if (weakRef.TryGetTarget(out IRegionElement target))
-                    {
-                        element = target;
-                        return true;
-                    }
-                    else
-                    {
-                        // 弱參考已失效，移除
-                        _regions.Remove(regionName);
-                    }
+                    element = target;
+                    return true;
                 }
 
                 return false;
             }
         }
 
-        /// <summary>
-        /// 清理所有已失效的弱參考。
-        /// </summary>
-        /// <remarks>
-        /// 此方法應在鎖內呼叫。
-        /// </remarks>
-        private void CleanupDeadReferences()
-        {
-            var deadKeys = _regions
-                .Where(kvp => !kvp.Value.TryGetTarget(out IRegionElement _))
-                .Select(kvp => kvp.Key)
-                .ToList();
 
-            foreach (var key in deadKeys)
-            {
-                _regions.Remove(key);
-                Debug.WriteLine(string.Format("[RegionStore] Cleaned up dead reference for region '{0}'.", key));
-            }
-        }
 
         /// <summary>
         /// 引發 RegionRegistered 事件。
@@ -309,7 +263,6 @@ namespace NavigationLib.UseCases
         {
             lock (_lock)
             {
-                CleanupDeadReferences();
                 return _regions.Keys.ToList();
             }
         }

@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using NavigationLib.UseCases;
 
@@ -16,8 +15,8 @@ namespace NavigationLib.FrameworksAndDrivers
     /// </para>
     /// <para>
     /// 使用 WeakEventManager 管理事件訂閱，避免記憶體洩漏。
-    /// 使用 ConditionalWeakTable 管理 FrameworkElement 與 RegionElementAdapter 的關聯，
-    /// 確保 Adapter 隨 Element 生命週期自動回收。
+    /// RegionElementAdapter 儲存在 element 的 private AttachedProperty 上，
+    /// 並會自動訂閱 Unloaded 事件以主動從 RegionStore 解除註冊。
     /// </para>
     /// </remarks>
     /// <example>
@@ -42,11 +41,14 @@ namespace NavigationLib.FrameworksAndDrivers
                 new PropertyMetadata(null, OnNameChanged));
 
         /// <summary>
-        /// 使用 ConditionalWeakTable 管理 FrameworkElement 與 RegionElementAdapter 的關聯。
-        /// 當 FrameworkElement 被 GC 回收時，對應的 Adapter 也會自動被回收。
+        /// 私有附加屬性，用於儲存 RegionElementAdapter（取代 ConditionalWeakTable）。
         /// </summary>
-        private static readonly ConditionalWeakTable<FrameworkElement, RegionElementAdapter> 
-            _adapterTable = new ConditionalWeakTable<FrameworkElement, RegionElementAdapter>();
+        private static readonly DependencyProperty AdapterProperty =
+            DependencyProperty.RegisterAttached(
+                "Adapter",
+                typeof(RegionElementAdapter),
+                typeof(Region),
+                new PropertyMetadata(null));
 
         /// <summary>
         /// 取得元素的 Region 名稱。
@@ -156,12 +158,15 @@ namespace NavigationLib.FrameworksAndDrivers
             try
             {
                 // 嘗試取得現有 Adapter，若不存在則建立新的
-                RegionElementAdapter adapter;
-                if (!_adapterTable.TryGetValue(element, out adapter))
+                RegionElementAdapter adapter = (RegionElementAdapter)element.GetValue(AdapterProperty);
+                if (adapter == null)
                 {
                     adapter = new RegionElementAdapter(element);
-                    _adapterTable.Add(element, adapter);
+                    element.SetValue(AdapterProperty, adapter);
                 }
+                
+                // 設定 adapter 的註冊 region 名稱（供 Unloaded 時自動解除註冊）
+                adapter.SetRegisteredRegionName(regionName);
                 
                 RegionStore.Instance.Register(regionName, adapter);
                 Debug.WriteLine(string.Format("[Region] Registered region '{0}'.", regionName));
@@ -179,13 +184,15 @@ namespace NavigationLib.FrameworksAndDrivers
         {
             try
             {
-                // 嘗試從 ConditionalWeakTable 取得對應的 Adapter
-                if (_adapterTable.TryGetValue(element, out RegionElementAdapter adapter))
+                // 嘗試從 AttachedProperty 取得對應的 Adapter
+                RegionElementAdapter adapter = (RegionElementAdapter)element.GetValue(AdapterProperty);
+                if (adapter != null)
                 {
                     RegionStore.Instance.Unregister(regionName, adapter);
                     
-                    // 從 ConditionalWeakTable 移除關聯
-                    _adapterTable.Remove(element);
+                    // 清理 adapter 與移除 AttachedProperty
+                    adapter.Dispose();
+                    element.ClearValue(AdapterProperty);
                     
                     Debug.WriteLine(string.Format("[Region] Unregistered region '{0}'.", regionName));
                 }
