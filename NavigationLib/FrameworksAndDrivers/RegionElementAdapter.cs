@@ -76,9 +76,7 @@ namespace NavigationLib.FrameworksAndDrivers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            // 包裝成 DependencyPropertyChangedEventHandler
-            DependencyPropertyChangedEventHandler wrappedHandler = (s, e) => handler(s, EventArgs.Empty);
-            _element.DataContextChanged += wrappedHandler;
+            DataContextChangedEventManager.AddHandler(_element, handler);
         }
 
         /// <summary>
@@ -90,11 +88,7 @@ namespace NavigationLib.FrameworksAndDrivers
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 
-            // 注意：由於包裝的關係，這個實作無法正確移除處理器
-            // 需要改用 WeakEventManager 或保存處理器映射
-            // 暫時先保留此簽章以符合介面
-            DependencyPropertyChangedEventHandler wrappedHandler = (s, e) => handler(s, EventArgs.Empty);
-            _element.DataContextChanged -= wrappedHandler;
+            DataContextChangedEventManager.RemoveHandler(_element, handler);
         }
 
         /// <summary>
@@ -203,6 +197,78 @@ namespace NavigationLib.FrameworksAndDrivers
             protected override ListenerList NewListenerList()
             {
                 return new ListenerList<RoutedEventArgs>();
+            }
+        }
+
+        /// <summary>
+        /// DataContextChanged 事件的 WeakEventManager。
+        /// </summary>
+        private class DataContextChangedEventManager : WeakEventManager
+        {
+            private DataContextChangedEventManager()
+            {
+            }
+
+            private static DataContextChangedEventManager CurrentManager
+            {
+                get
+                {
+                    Type managerType = typeof(DataContextChangedEventManager);
+                    DataContextChangedEventManager manager = (DataContextChangedEventManager)GetCurrentManager(managerType);
+                    if (manager == null)
+                    {
+                        manager = new DataContextChangedEventManager();
+                        SetCurrentManager(managerType, manager);
+                    }
+                    return manager;
+                }
+            }
+
+            public static void AddHandler(FrameworkElement element, EventHandler handler)
+            {
+                if (element == null)
+                    throw new ArgumentNullException(nameof(element));
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                CurrentManager.ProtectedAddHandler(element, handler);
+            }
+
+            public static void RemoveHandler(FrameworkElement element, EventHandler handler)
+            {
+                if (element == null)
+                    throw new ArgumentNullException(nameof(element));
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                CurrentManager.ProtectedRemoveHandler(element, handler);
+            }
+
+            protected override void StartListening(object source)
+            {
+                if (source is FrameworkElement element)
+                {
+                    element.DataContextChanged += OnDataContextChanged;
+                }
+            }
+
+            protected override void StopListening(object source)
+            {
+                if (source is FrameworkElement element)
+                {
+                    element.DataContextChanged -= OnDataContextChanged;
+                }
+            }
+
+            private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+            {
+                // 轉發事件給所有註冊的 EventHandler（將 DependencyPropertyChangedEventArgs 包裝成 EventArgs）
+                DeliverEventToList(sender, EventArgs.Empty, null);
+            }
+
+            protected override ListenerList NewListenerList()
+            {
+                return new ListenerList();
             }
         }
     }
