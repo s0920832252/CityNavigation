@@ -1,19 +1,18 @@
 using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using NavigationLib.Entities.Exceptions;
 
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    /// 路徑驗證器，用於驗證和解析導航路徑。
+    ///     路徑驗證器，用於驗證和解析導航路徑。
     /// </summary>
     internal static class PathValidator
     {
         private static readonly Regex SegmentPattern = new Regex(@"^[a-zA-Z0-9_-]+$", RegexOptions.Compiled);
 
         /// <summary>
-        /// 驗證並解析導航路徑。
+        ///     驗證並解析導航路徑。
         /// </summary>
         /// <param name="path">要驗證的路徑。</param>
         /// <returns>解析後的段落陣列。</returns>
@@ -27,7 +26,7 @@ namespace NavigationLib.UseCases
             }
 
             // 分割路徑
-            string[] segments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var segments = path.Split(new[] { '/', }, StringSplitOptions.RemoveEmptyEntries);
 
             // 檢查是否有有效段落
             if (segments.Length == 0)
@@ -36,20 +35,20 @@ namespace NavigationLib.UseCases
             }
 
             // 驗證每個段落
-            for (int i = 0; i < segments.Length; i++)
+            for (var i = 0; i < segments.Length; i++)
             {
-                string segment = segments[i];
+                var segment = segments[i];
 
                 if (string.IsNullOrWhiteSpace(segment))
                 {
-                    throw new InvalidPathException(path, 
-                        string.Format("Segment at index {0} is empty or whitespace.", i));
+                    throw new InvalidPathException(path,
+                        $"Segment at index {i} is empty or whitespace.");
                 }
 
                 if (!SegmentPattern.IsMatch(segment))
                 {
                     throw new InvalidPathException(path,
-                        string.Format("Segment '{0}' at index {1} contains invalid characters. Only alphanumeric characters, hyphens, and underscores are allowed.", segment, i));
+                        $"Segment '{segment}' at index {i} contains invalid characters. Only alphanumeric characters, hyphens, and underscores are allowed.");
                 }
             }
 

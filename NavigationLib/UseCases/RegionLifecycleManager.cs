@@ -8,24 +8,44 @@ using NavigationLib.FrameworksAndDrivers;
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    /// 管理 Region 的生命週期，包含自動訂閱 Unloaded 事件與清理資源。
+    ///     管理 Region 的生命週期，包含自動訂閱 Unloaded 事件與清理資源。
     /// </summary>
     internal sealed class RegionLifecycleManager : IDisposable
     {
-        private readonly Dictionary<string, IDisposable> _subscriptions;
         private readonly object _lock = new object();
+        private readonly Dictionary<string, IDisposable> _subscriptions;
         private bool _disposed;
 
         /// <summary>
-        /// 初始化 RegionLifecycleManager 的新執行個體。
+        ///     初始化 RegionLifecycleManager 的新執行個體。
         /// </summary>
-        public RegionLifecycleManager()
+        public RegionLifecycleManager() => _subscriptions = new Dictionary<string, IDisposable>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        ///     釋放所有資源並取消所有訂閱。
+        /// </summary>
+        public void Dispose()
         {
-            _subscriptions = new Dictionary<string, IDisposable>(StringComparer.OrdinalIgnoreCase);
+            if (_disposed)
+            {
+                return;
+            }
+
+            lock (_lock)
+            {
+                foreach (var subscription in _subscriptions.Values)
+                {
+                    subscription?.Dispose();
+                }
+
+                _subscriptions.Clear();
+            }
+
+            _disposed = true;
         }
 
         /// <summary>
-        /// 開始管理指定的 region，訂閱其 Unloaded 事件。
+        ///     開始管理指定的 region，訂閱其 Unloaded 事件。
         /// </summary>
         /// <param name="regionName">Region 名稱。</param>
         /// <param name="element">Region 元素。</param>
@@ -33,11 +53,19 @@ namespace NavigationLib.UseCases
         public void ManageRegion(string regionName, IRegionElement element, Action<string> onUnload)
         {
             if (regionName == null)
+            {
                 throw new ArgumentNullException(nameof(regionName));
+            }
+
             if (element == null)
+            {
                 throw new ArgumentNullException(nameof(element));
+            }
+
             if (onUnload == null)
+            {
                 throw new ArgumentNullException(nameof(onUnload));
+            }
 
             lock (_lock)
             {
@@ -49,36 +77,39 @@ namespace NavigationLib.UseCases
 
                 // 訂閱 Unloaded 事件
                 var subscription = SubscribeToUnloaded(regionName, element, onUnload);
+
                 if (subscription != null)
                 {
                     _subscriptions[regionName] = subscription;
-                    Debug.WriteLine(string.Format("[RegionLifecycleManager] Started managing region '{0}'.", regionName));
+                    Debug.WriteLine($"[RegionLifecycleManager] Started managing region '{regionName}'.");
                 }
             }
         }
 
         /// <summary>
-        /// 停止管理指定的 region，取消事件訂閱。
+        ///     停止管理指定的 region，取消事件訂閱。
         /// </summary>
         /// <param name="regionName">Region 名稱。</param>
         public void StopManaging(string regionName)
         {
             if (regionName == null)
+            {
                 throw new ArgumentNullException(nameof(regionName));
+            }
 
             lock (_lock)
             {
-                if (_subscriptions.TryGetValue(regionName, out IDisposable subscription))
+                if (_subscriptions.TryGetValue(regionName, out var subscription))
                 {
                     subscription?.Dispose();
                     _subscriptions.Remove(regionName);
-                    Debug.WriteLine(string.Format("[RegionLifecycleManager] Stopped managing region '{0}'.", regionName));
+                    Debug.WriteLine($"[RegionLifecycleManager] Stopped managing region '{regionName}'.");
                 }
             }
         }
 
         /// <summary>
-        /// 訂閱元素的 Unloaded 事件。
+        ///     訂閱元素的 Unloaded 事件。
         /// </summary>
         private IDisposable SubscribeToUnloaded(string regionName, IRegionElement element, Action<string> onUnload)
         {
@@ -89,7 +120,7 @@ namespace NavigationLib.UseCases
                     // 確認元素真的離開視覺樹
                     if (!adapter.IsInVisualTree())
                     {
-                        Debug.WriteLine(string.Format("[RegionLifecycleManager] Region '{0}' element unloaded, triggering cleanup.", regionName));
+                        Debug.WriteLine($"[RegionLifecycleManager] Region '{regionName}' element unloaded, triggering cleanup.");
                         onUnload(regionName);
                     }
                 };
@@ -105,27 +136,7 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        /// 釋放所有資源並取消所有訂閱。
-        /// </summary>
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            lock (_lock)
-            {
-                foreach (var subscription in _subscriptions.Values)
-                {
-                    subscription?.Dispose();
-                }
-                _subscriptions.Clear();
-            }
-
-            _disposed = true;
-        }
-
-        /// <summary>
-        /// 封裝 Unloaded 事件訂閱的 IDisposable 實作。
+        ///     封裝 Unloaded 事件訂閱的 IDisposable 實作。
         /// </summary>
         private class UnloadSubscription : IDisposable
         {
@@ -142,7 +153,9 @@ namespace NavigationLib.UseCases
             public void Dispose()
             {
                 if (_disposed)
+                {
                     return;
+                }
 
                 _adapter.UnsubscribeUnloaded(_handler);
                 _disposed = true;

@@ -6,21 +6,21 @@ using NavigationLib.UseCases;
 namespace NavigationLib.FrameworksAndDrivers
 {
     /// <summary>
-    /// 提供 Region 附加屬性，用於在 XAML 中標記 Region。
+    ///     提供 Region 附加屬性，用於在 XAML 中標記 Region。
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// 在 FrameworkElement 上設定 Region.Name 會在元素 Loaded 時自動註冊到 RegionStore，
-    /// 並在 Unloaded 時（確認離開視覺樹後）解除註冊。
-    /// </para>
-    /// <para>
-    /// 使用 WeakEventManager 管理事件訂閱，避免記憶體洩漏。
-    /// RegionStore 透過強引用管理 RegionElementAdapter 的生命週期，
-    /// 並由 RegionLifecycleManager 訂閱 Unloaded 事件以自動清理資源。
-    /// </para>
+    ///     <para>
+    ///         在 FrameworkElement 上設定 Region.Name 會在元素 Loaded 時自動註冊到 RegionStore，
+    ///         並在 Unloaded 時（確認離開視覺樹後）解除註冊。
+    ///     </para>
+    ///     <para>
+    ///         使用 WeakEventManager 管理事件訂閱，避免記憶體洩漏。
+    ///         RegionStore 透過強引用管理 RegionElementAdapter 的生命週期，
+    ///         並由 RegionLifecycleManager 訂閱 Unloaded 事件以自動清理資源。
+    ///     </para>
     /// </remarks>
     /// <example>
-    /// <code>
+    ///     <code>
     /// &lt;TabControl nav:Region.Name="Shell"&gt;
     ///   &lt;TabItem Header="Home"&gt;
     ///     &lt;local:HomeView nav:Region.Name="Home" /&gt;
@@ -31,43 +31,46 @@ namespace NavigationLib.FrameworksAndDrivers
     public static class Region
     {
         /// <summary>
-        /// Region.Name 附加屬性。
+        ///     Region.Name 附加屬性。
         /// </summary>
         public static readonly DependencyProperty NameProperty =
-            DependencyProperty.RegisterAttached(
-                "Name",
+            DependencyProperty.RegisterAttached("Name",
                 typeof(string),
                 typeof(Region),
                 new PropertyMetadata(null, OnNameChanged));
 
         /// <summary>
-        /// 取得元素的 Region 名稱。
+        ///     取得元素的 Region 名稱。
         /// </summary>
         /// <param name="element">目標元素。</param>
         /// <returns>Region 名稱，若未設定則為 null。</returns>
         public static string GetName(DependencyObject element)
         {
             if (element == null)
+            {
                 throw new ArgumentNullException(nameof(element));
+            }
 
             return (string)element.GetValue(NameProperty);
         }
 
         /// <summary>
-        /// 設定元素的 Region 名稱。
+        ///     設定元素的 Region 名稱。
         /// </summary>
         /// <param name="element">目標元素。</param>
         /// <param name="value">Region 名稱。</param>
         public static void SetName(DependencyObject element, string value)
         {
             if (element == null)
+            {
                 throw new ArgumentNullException(nameof(element));
+            }
 
             element.SetValue(NameProperty, value);
         }
 
         /// <summary>
-        /// Region.Name 屬性變更時的回呼。
+        ///     Region.Name 屬性變更時的回呼。
         /// </summary>
         private static void OnNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -77,18 +80,15 @@ namespace NavigationLib.FrameworksAndDrivers
                 return;
             }
 
-            string oldName = e.OldValue as string;
-            string newName = e.NewValue as string;
-
             // 移除舊的事件處理器
-            if (!string.IsNullOrEmpty(oldName))
+            if (e.OldValue is string oldName && !string.IsNullOrEmpty(oldName))
             {
                 LoadedEventManager.RemoveHandler(element, OnElementLoaded);
                 UnloadedEventManager.RemoveHandler(element, OnElementUnloaded);
             }
 
             // 若新名稱有效，註冊事件處理器
-            if (!string.IsNullOrEmpty(newName))
+            if (e.NewValue is string newName && !string.IsNullOrEmpty(newName))
             {
                 LoadedEventManager.AddHandler(element, OnElementLoaded);
                 UnloadedEventManager.AddHandler(element, OnElementUnloaded);
@@ -102,14 +102,17 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        /// 元素 Loaded 時的處理器。
+        ///     元素 Loaded 時的處理器。
         /// </summary>
         private static void OnElementLoaded(object sender, RoutedEventArgs e)
         {
             if (!(sender is FrameworkElement element))
+            {
                 return;
+            }
 
-            string regionName = GetName(element);
+            var regionName = GetName(element);
+
             if (!string.IsNullOrEmpty(regionName))
             {
                 RegisterRegion(element, regionName);
@@ -117,14 +120,17 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        /// 元素 Unloaded 時的處理器。
+        ///     元素 Unloaded 時的處理器。
         /// </summary>
         private static void OnElementUnloaded(object sender, RoutedEventArgs e)
         {
             if (!(sender is FrameworkElement element))
+            {
                 return;
+            }
 
-            string regionName = GetName(element);
+            var regionName = GetName(element);
+
             if (!string.IsNullOrEmpty(regionName))
             {
                 // 使用 PresentationSource.FromVisual 檢查元素是否真的離開視覺樹
@@ -135,32 +141,31 @@ namespace NavigationLib.FrameworksAndDrivers
                 }
                 else
                 {
-                    Debug.WriteLine(string.Format("[Region] Element '{0}' Unloaded but still in visual tree. Skipping unregistration.", regionName));
+                    Debug.WriteLine($"[Region] Element '{regionName}' Unloaded but still in visual tree. Skipping unregistration.");
                 }
             }
         }
 
         /// <summary>
-        /// 註冊 Region 到 RegionStore。
+        ///     註冊 Region 到 RegionStore。
         /// </summary>
         private static void RegisterRegion(FrameworkElement element, string regionName)
         {
             try
             {
-                // 每次建立新的 adapter（RegionStore 會透過 IsSameUnderlyingElement 判斷是否重複）
+                // 每次建立新的 adapter（RegionStore 會透過 IsSameElement 判斷是否重複）
                 var adapter = new RegionElementAdapter(element);
-                
                 RegionStore.Instance.Register(regionName, adapter);
-                Debug.WriteLine(string.Format("[Region] Registered region '{0}'.", regionName));
+                Debug.WriteLine($"[Region] Registered region '{regionName}'.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(string.Format("[Region] Failed to register region '{0}': {1}", regionName, ex.Message));
+                Debug.WriteLine("[Region] Failed to register region '{0}': {1}", regionName, ex.Message);
             }
         }
 
         /// <summary>
-        /// 從 RegionStore 解除註冊 Region。
+        ///     從 RegionStore 解除註冊 Region。
         /// </summary>
         private static void UnregisterRegion(FrameworkElement element, string regionName)
         {
@@ -168,16 +173,16 @@ namespace NavigationLib.FrameworksAndDrivers
             {
                 // 直接呼叫 Unregister（RegionStore 會處理清理）
                 RegionStore.Instance.Unregister(regionName);
-                Debug.WriteLine(string.Format("[Region] Unregistered region '{0}'.", regionName));
+                Debug.WriteLine($"[Region] Unregistered region '{regionName}'.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(string.Format("[Region] Failed to unregister region '{0}': {1}", regionName, ex.Message));
+                Debug.WriteLine("[Region] Failed to unregister region '{0}': {1}", regionName, ex.Message);
             }
         }
 
         /// <summary>
-        /// Loaded 事件的 WeakEventManager。
+        ///     Loaded 事件的 WeakEventManager。
         /// </summary>
         private class LoadedEventManager : WeakEventManager
         {
@@ -189,13 +194,15 @@ namespace NavigationLib.FrameworksAndDrivers
             {
                 get
                 {
-                    Type managerType = typeof(LoadedEventManager);
-                    LoadedEventManager manager = (LoadedEventManager)GetCurrentManager(managerType);
+                    var managerType = typeof(LoadedEventManager);
+                    var manager = (LoadedEventManager)GetCurrentManager(managerType);
+
                     if (manager == null)
                     {
                         manager = new LoadedEventManager();
                         SetCurrentManager(managerType, manager);
                     }
+
                     return manager;
                 }
             }
@@ -203,9 +210,14 @@ namespace NavigationLib.FrameworksAndDrivers
             public static void AddHandler(FrameworkElement element, EventHandler<RoutedEventArgs> handler)
             {
                 if (element == null)
+                {
                     throw new ArgumentNullException(nameof(element));
+                }
+
                 if (handler == null)
+                {
                     throw new ArgumentNullException(nameof(handler));
+                }
 
                 CurrentManager.ProtectedAddHandler(element, handler);
             }
@@ -213,9 +225,14 @@ namespace NavigationLib.FrameworksAndDrivers
             public static void RemoveHandler(FrameworkElement element, EventHandler<RoutedEventArgs> handler)
             {
                 if (element == null)
+                {
                     throw new ArgumentNullException(nameof(element));
+                }
+
                 if (handler == null)
+                {
                     throw new ArgumentNullException(nameof(handler));
+                }
 
                 CurrentManager.ProtectedRemoveHandler(element, handler);
             }
@@ -236,14 +253,11 @@ namespace NavigationLib.FrameworksAndDrivers
                 }
             }
 
-            protected override ListenerList NewListenerList()
-            {
-                return new ListenerList<RoutedEventArgs>();
-            }
+            protected override ListenerList NewListenerList() => new ListenerList<RoutedEventArgs>();
         }
 
         /// <summary>
-        /// Unloaded 事件的 WeakEventManager。
+        ///     Unloaded 事件的 WeakEventManager。
         /// </summary>
         private class UnloadedEventManager : WeakEventManager
         {
@@ -255,13 +269,15 @@ namespace NavigationLib.FrameworksAndDrivers
             {
                 get
                 {
-                    Type managerType = typeof(UnloadedEventManager);
-                    UnloadedEventManager manager = (UnloadedEventManager)GetCurrentManager(managerType);
+                    var managerType = typeof(UnloadedEventManager);
+                    var manager = (UnloadedEventManager)GetCurrentManager(managerType);
+
                     if (manager == null)
                     {
                         manager = new UnloadedEventManager();
                         SetCurrentManager(managerType, manager);
                     }
+
                     return manager;
                 }
             }
@@ -269,9 +285,14 @@ namespace NavigationLib.FrameworksAndDrivers
             public static void AddHandler(FrameworkElement element, EventHandler<RoutedEventArgs> handler)
             {
                 if (element == null)
+                {
                     throw new ArgumentNullException(nameof(element));
+                }
+
                 if (handler == null)
+                {
                     throw new ArgumentNullException(nameof(handler));
+                }
 
                 CurrentManager.ProtectedAddHandler(element, handler);
             }
@@ -279,9 +300,14 @@ namespace NavigationLib.FrameworksAndDrivers
             public static void RemoveHandler(FrameworkElement element, EventHandler<RoutedEventArgs> handler)
             {
                 if (element == null)
+                {
                     throw new ArgumentNullException(nameof(element));
+                }
+
                 if (handler == null)
+                {
                     throw new ArgumentNullException(nameof(handler));
+                }
 
                 CurrentManager.ProtectedRemoveHandler(element, handler);
             }
@@ -302,10 +328,7 @@ namespace NavigationLib.FrameworksAndDrivers
                 }
             }
 
-            protected override ListenerList NewListenerList()
-            {
-                return new ListenerList<RoutedEventArgs>();
-            }
+            protected override ListenerList NewListenerList() => new ListenerList<RoutedEventArgs>();
         }
     }
 }

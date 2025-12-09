@@ -3,40 +3,17 @@ using System;
 namespace NavigationLib.Entities
 {
     /// <summary>
-    /// 表示導航操作的結果。
-    /// 此類別為不可變（immutable），所有屬性僅能透過建構子或靜態工廠方法初始化。
+    ///     表示導航操作的結果。
+    ///     此類別為不可變（immutable），所有屬性僅能透過建構子或靜態工廠方法初始化。
     /// </summary>
     /// <remarks>
-    /// NavigationResult 用於透過 callback 回報導航是否成功，以及失敗時的詳細資訊。
-    /// 建議使用 <see cref="CreateSuccess"/> 和 <see cref="CreateFailure"/> 靜態方法建立實例。
+    ///     NavigationResult 用於透過 callback 回報導航是否成功，以及失敗時的詳細資訊。
+    ///     建議使用 <see cref="CreateSuccess" /> 和 <see cref="CreateFailure" /> 靜態方法建立實例。
     /// </remarks>
     public class NavigationResult
     {
         /// <summary>
-        /// 取得指示導航是否成功的值。
-        /// </summary>
-        public bool Success { get; }
-
-        /// <summary>
-        /// 取得導航失敗時的段落名稱（region 名稱）。
-        /// 若導航成功，此值為 null。
-        /// </summary>
-        public string FailedAtSegment { get; }
-
-        /// <summary>
-        /// 取得失敗時的錯誤訊息。
-        /// 若導航成功，此值為 null。
-        /// </summary>
-        public string ErrorMessage { get; }
-
-        /// <summary>
-        /// 取得導航過程中拋出的例外（若有）。
-        /// 若未發生例外，此值為 null。
-        /// </summary>
-        public Exception Exception { get; }
-
-        /// <summary>
-        /// 初始化 NavigationResult 的新執行個體。
+        ///     初始化 NavigationResult 的新執行個體。
         /// </summary>
         /// <param name="success">導航是否成功。</param>
         /// <param name="failedAtSegment">失敗的段落名稱（成功時為 null）。</param>
@@ -44,18 +21,41 @@ namespace NavigationLib.Entities
         /// <param name="exception">例外物件（若有）。</param>
         public NavigationResult(bool success, string failedAtSegment, string errorMessage, Exception exception)
         {
-            Success = success;
+            Success         = success;
             FailedAtSegment = failedAtSegment;
-            ErrorMessage = errorMessage;
-            Exception = exception;
+            ErrorMessage    = errorMessage;
+            Exception       = exception;
         }
 
         /// <summary>
-        /// 建立表示成功導航的 NavigationResult。
+        ///     取得指示導航是否成功的值。
+        /// </summary>
+        public bool Success { get; }
+
+        /// <summary>
+        ///     取得導航失敗時的段落名稱（region 名稱）。
+        ///     若導航成功，此值為 null。
+        /// </summary>
+        public string FailedAtSegment { get; }
+
+        /// <summary>
+        ///     取得失敗時的錯誤訊息。
+        ///     若導航成功，此值為 null。
+        /// </summary>
+        public string ErrorMessage { get; }
+
+        /// <summary>
+        ///     取得導航過程中拋出的例外（若有）。
+        ///     若未發生例外，此值為 null。
+        /// </summary>
+        public Exception Exception { get; }
+
+        /// <summary>
+        ///     建立表示成功導航的 NavigationResult。
         /// </summary>
         /// <returns>表示成功的 NavigationResult 執行個體。</returns>
         /// <example>
-        /// <code>
+        ///     <code>
         /// var result = NavigationResult.CreateSuccess();
         /// if (result.Success)
         /// {
@@ -63,23 +63,20 @@ namespace NavigationLib.Entities
         /// }
         /// </code>
         /// </example>
-        public static NavigationResult CreateSuccess()
-        {
-            return new NavigationResult(true, null, null, null);
-        }
+        public static NavigationResult CreateSuccess() => new NavigationResult(true, null, null, null);
 
         /// <summary>
-        /// 建立表示失敗導航的 NavigationResult。
+        ///     建立表示失敗導航的 NavigationResult。
         /// </summary>
         /// <param name="failedAtSegment">導航失敗的段落名稱。</param>
         /// <param name="errorMessage">描述失敗原因的訊息。</param>
         /// <param name="exception">相關的例外物件（可選）。</param>
         /// <returns>表示失敗的 NavigationResult 執行個體。</returns>
         /// <exception cref="ArgumentNullException">
-        /// 當 <paramref name="errorMessage"/> 為 null 時拋出。
+        ///     當 <paramref name="errorMessage" /> 為 null 時拋出。
         /// </exception>
         /// <example>
-        /// <code>
+        ///     <code>
         /// var result = NavigationResult.CreateFailure("Level1", "Region not found within timeout.");
         /// if (!result.Success)
         /// {
@@ -90,22 +87,25 @@ namespace NavigationLib.Entities
         public static NavigationResult CreateFailure(string failedAtSegment, string errorMessage, Exception exception = null)
         {
             if (errorMessage == null)
+            {
                 throw new ArgumentNullException(nameof(errorMessage));
+            }
 
             return new NavigationResult(false, failedAtSegment, errorMessage, exception);
         }
 
         /// <summary>
-        /// 傳回代表目前物件的字串。
+        ///     傳回代表目前物件的字串。
         /// </summary>
         /// <returns>包含導航結果詳細資訊的字串。</returns>
         public override string ToString()
         {
             if (Success)
+            {
                 return "NavigationResult: Success";
+            }
 
-            return string.Format("NavigationResult: Failed at '{0}' - {1}",
-                FailedAtSegment ?? "(unknown)", ErrorMessage ?? "(no message)");
+            return $"NavigationResult: Failed at '{FailedAtSegment ?? "(unknown)"}' - {ErrorMessage ?? "(no message)"}";
         }
     }
 }
