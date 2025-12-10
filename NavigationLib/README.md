@@ -118,13 +118,14 @@ NavigationService.RequestNavigate(
 - ✅ 自然處理 DataTemplate 延遲建立
 - ✅ callback 模式報告結果
 
-### 記憶體管理
 
-- **ConditionalWeakTable** - 使用 .NET 內建的 `ConditionalWeakTable<FrameworkElement, RegionElementAdapter>` 管理元素與 Adapter 的關聯，確保 Adapter 隨 Element 生命週期自動回收
-- **WeakReference** - RegionStore 使用弱參考儲存 Region，當元素被移除後允許 GC 回收
-- **WeakEventManager** - Region 附加屬性使用弱事件管理 Loaded/Unloaded，避免事件處理器造成記憶體洩漏
-- **PresentationSource 檢查** - Unloaded 時確認元素真正離開視覺樹（避免 TabControl 切換時誤解除註冊）
-- **自動回收** - 當 FrameworkElement 被 GC 回收時，ConditionalWeakTable 中的 Adapter 也會自動被回收，無需手動清理
+### 記憶體管理與生命週期
+
+- **RegionStore（強引用）** - 使用強引用保存目前活躍的 `RegionElementAdapter`，確保在導航流程中不會被過早回收。RegionStore 統一管理註冊/解除註冊；元素真正離開視覺樹時由生命週期管理器執行清理。
+- **RegionLifecycleManager** - 集中處理 `Unloaded` 訂閱與回收，避免把生命週期邏輯散落在多處，並解決 TabControl 切換時的誤解除註冊問題。
+- **WeakEventManager** - `RegionElementAdapter` 使用 `WeakEventManager`（封裝的 `DataContextChangedEventManager` 與 Unloaded 處理）來管理事件訂閱，避免事件 handler 導致的記憶體洩漏。
+- **IsSameUnderlyingElement** - `IRegionElement` 提供 `IsSameUnderlyingElement(IRegionElement)` 比對語意，以避免以 adapter 實例為等價判準所產生的錯誤行為。
+- **PresentationSource 檢查** - 在 Unloaded 時仍會確認元素是否真正離開視覺樹，避免 TabControl 或其他虛擬化/切換情境下誤判。
 
 ### 重複註冊策略
 
@@ -178,17 +179,16 @@ Copyright © 2025
 
 ## 🔄 版本歷史
 
-### v1.0.2 (2025-12-08)
-- ✨ 改進：使用 `ConditionalWeakTable` 取代附加屬性管理 Adapter 生命週期
-- 🎯 優化：更符合 .NET 最佳實踐的記憶體管理機制
-- ✅ 驗證：所有測試通過，實際應用運作正常
+### v1.0.3 (2025-12-10)
+- ✨ 改進：引入 `RegionLifecycleManager` 將 Region 元素生命週期與 Unloaded 處理集中管理
+- 🔧 修正：`RegionStore` 改為以強引用管理活躍 `RegionElementAdapter`（避免導航期間被過早回收），並搭配生命週期管理器進行自動清理
+- 🛡️ 強化：`RegionElementAdapter` 使用 `WeakEventManager` 管理 `DataContextChanged`/`Unloaded` 訂閱，並新增 `IsSameUnderlyingElement` 比對語意
 
-### v1.0.1 (2025-12-08)
-- 🐛 修正：添加 Adapter 強引用機制，防止 RegionElementAdapter 過早被 GC 回收
+### v1.0.2 (2025-12-08)
+- 🐛 修正：添加 Adapter 強引用機制，防止 `RegionElementAdapter` 過早被 GC 回收
 - 📝 更新：記憶體管理機制說明
 
 ### v1.0.0 (2025-12-07)
 - 🎉 初始版本發布
 - ✅ 完整 Clean Architecture 實作
 - ✅ 事件驅動導航機制
-- ✅ WeakReference 記憶體管理
