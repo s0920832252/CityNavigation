@@ -113,38 +113,39 @@ namespace NavigationLib.UseCases
         ///         <strong>記憶體管理說明：</strong>
         ///     </para>
         ///     <para>
-        ///         此方法中的 Lambda handler 會捕獲 <paramref name="element"/> 變數（閉包），
-        ///         形成 handler → element 的強引用。同時，element.SubscribeUnloaded(handler) 
-        ///         會在 element 內部透過 WeakEventManager 訂閱 handler，形成 element → handler 的弱引用。
+        ///         此方法中的 Local function Handler 會捕獲 <paramref name="element"/> 變數（閉包），
+        ///         形成 Handler → element 的強引用。同時，element.SubscribeUnloaded(Handler) 
+        ///         會在 element 內部透過 WeakEventManager 訂閱 Handler，形成 element → Handler 的弱引用。
         ///     </para>
         ///     <para>
         ///         雖然看似循環引用，但因為其中一邊是弱引用（WeakEventManager），
-        ///         當外部移除對 handler 的強引用時（例如透過 UnloadSubscription.Dispose），
+        ///         當外部移除對 Handler 的強引用時（例如透過 Dispose），
         ///         GC 仍可正常回收這些物件，不會造成記憶體洩漏。
         ///     </para>
         ///     <para>
         ///         引用關係：
         ///         <list type="bullet">
-        ///             <item>Lambda handler → element（強引用，閉包捕獲）</item>
-        ///             <item>element → handler（弱引用，透過 WeakEventManager）</item>
-        ///             <item>UnloadSubscription.Dispose() 會明確移除訂閱，確保資源釋放</item>
+        ///             <item>Local function Handler → element（強引用，閉包捕獲）</item>
+        ///             <item>element → Handler（弱引用，透過 WeakEventManager）</item>
+        ///             <item>Dispose() 會明確移除訂閱，確保資源釋放</item>
         ///         </list>
         ///     </para>
         /// </remarks>
         private IDisposable SubscribeToUnloaded(string regionName, IRegionElement element, Action<string> onUnload)
         {
-            EventHandler handler = (sender, e) =>
+            // Local function：處理元素卸載事件
+            void Handler(object sender, EventArgs e)
             {
                 // 確認元素真的離開視覺樹（避免 TabControl 切換等情況的誤判）
-                // 注意：雖然 Lambda 捕獲了 element，但不會造成記憶體洩漏（見上方 remarks）
+                // 注意：雖然捕獲了 element，但不會造成記憶體洩漏（見上方 remarks）
                 if (!element.IsInVisualTree())
                 {
                     Debug.WriteLine($"[RegionLifecycleManager] Region '{regionName}' element unloaded, triggering cleanup.");
                     onUnload(regionName);
                 }
-            };
+            }
 
-            return element.SubscribeUnloaded(handler);
+            return element.SubscribeUnloaded(Handler);
         }
     }
 }
