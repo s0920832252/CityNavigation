@@ -58,5 +58,10 @@ namespace NavigationLib.Tests.TestHelpers
         {
             return true;
         }
+
+        public bool IsSameElement(IRegionElement other)
+        {
+            return ReferenceEquals(this, other);
+        }
     }
 }

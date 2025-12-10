@@ -111,7 +111,7 @@ namespace NavigationLib.Tests.UseCases
             Assert.That(viewModel.LastReceivedContext.IsLastSegment, Is.True);
 
             // Cleanup
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
         }
 
         [Test]
@@ -157,8 +157,8 @@ namespace NavigationLib.Tests.UseCases
             Assert.That(viewModel2.LastReceivedContext.IsLastSegment, Is.True);
 
             // Cleanup
-            store.Unregister(region1, element1);
-            store.Unregister(region2, element2);
+            store.Unregister(region1);
+            store.Unregister(region2);
         }
 
         [Test]
@@ -192,7 +192,7 @@ namespace NavigationLib.Tests.UseCases
             Assert.That(viewModel.LastReceivedContext.Parameter, Is.SameAs(parameter));
 
             // Cleanup
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
         }
 
         [Test]
@@ -227,7 +227,7 @@ namespace NavigationLib.Tests.UseCases
             Assert.That(receivedResult.Exception, Is.Not.Null);
 
             // Cleanup
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
         }
 
         [Test]
@@ -263,7 +263,7 @@ namespace NavigationLib.Tests.UseCases
             Assert.That(viewModel.NavigationCallCount, Is.EqualTo(1));
 
             // Cleanup
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
         }
 
         [Test]
@@ -289,7 +289,7 @@ namespace NavigationLib.Tests.UseCases
             Assert.That(viewModel.NavigationCallCount, Is.EqualTo(1));
 
             // Cleanup
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
         }
     }
 }

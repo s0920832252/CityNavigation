@@ -1,10 +1,8 @@
 using System;
-using System.Linq;
-using System.Threading;
 using NavigationLib.Adapters;
-using NUnit.Framework;
-using NavigationLib.UseCases;
 using NavigationLib.Tests.TestHelpers;
+using NavigationLib.UseCases;
+using NUnit.Framework;
 
 namespace NavigationLib.Tests.UseCases
 {
@@ -28,19 +26,19 @@ namespace NavigationLib.Tests.UseCases
             // Arrange
             var store = RegionStore.Instance;
             var region = new MockRegionElement();
-            string regionName = "TestRegion_" + Guid.NewGuid();
+            var regionName = "TestRegion_" + Guid.NewGuid();
 
             // Act
             store.Register(regionName, region);
             IRegionElement retrievedRegion;
-            bool found = store.TryGetRegion(regionName, out retrievedRegion);
+            var found = store.TryGetRegion(regionName, out retrievedRegion);
 
             // Assert
             Assert.That(found, Is.True);
             Assert.That(retrievedRegion, Is.SameAs(region));
 
             // Cleanup
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
         }
 
         [Test]
@@ -73,20 +71,20 @@ namespace NavigationLib.Tests.UseCases
             var store = RegionStore.Instance;
             var region1 = new MockRegionElement();
             var region2 = new MockRegionElement();
-            string regionName = "TestRegion_" + Guid.NewGuid();
+            var regionName = "TestRegion_" + Guid.NewGuid();
 
             // Act
             store.Register(regionName, region1);
             store.Register(regionName, region2);
             IRegionElement retrievedRegion;
-            bool found = store.TryGetRegion(regionName, out retrievedRegion);
+            var found = store.TryGetRegion(regionName, out retrievedRegion);
 
             // Assert
             Assert.That(found, Is.True);
             Assert.That(retrievedRegion, Is.SameAs(region2), "Second registration should replace first");
 
             // Cleanup
-            store.Unregister(regionName, region2);
+            store.Unregister(regionName);
         }
 
         [Test]
@@ -95,13 +93,13 @@ namespace NavigationLib.Tests.UseCases
             // Arrange
             var store = RegionStore.Instance;
             var region = new MockRegionElement();
-            string regionName = "TestRegion_" + Guid.NewGuid();
+            var regionName = "TestRegion_" + Guid.NewGuid();
             store.Register(regionName, region);
 
             // Act
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
             IRegionElement retrievedRegion;
-            bool found = store.TryGetRegion(regionName, out retrievedRegion);
+            var found = store.TryGetRegion(regionName, out retrievedRegion);
 
             // Assert
             Assert.That(found, Is.False);
@@ -115,7 +113,7 @@ namespace NavigationLib.Tests.UseCases
             var region = new MockRegionElement();
 
             // Act & Assert
-            Assert.DoesNotThrow(() => store.Unregister("NonExistentRegion", region));
+            Assert.DoesNotThrow(() => store.Unregister("NonExistentRegion"));
         }
 
         [Test]
@@ -126,7 +124,7 @@ namespace NavigationLib.Tests.UseCases
 
             // Act
             IRegionElement region;
-            bool found = store.TryGetRegion("NonExistentRegion_" + Guid.NewGuid(), out region);
+            var found = store.TryGetRegion("NonExistentRegion_" + Guid.NewGuid(), out region);
 
             // Assert
             Assert.That(found, Is.False);
@@ -140,8 +138,8 @@ namespace NavigationLib.Tests.UseCases
             var store = RegionStore.Instance;
             var region1 = new MockRegionElement();
             var region2 = new MockRegionElement();
-            string name1 = "TestRegion1_" + Guid.NewGuid();
-            string name2 = "TestRegion2_" + Guid.NewGuid();
+            var name1 = "TestRegion1_" + Guid.NewGuid();
+            var name2 = "TestRegion2_" + Guid.NewGuid();
 
             // Act
             store.Register(name1, region1);
@@ -153,39 +151,10 @@ namespace NavigationLib.Tests.UseCases
             Assert.That(names, Does.Contain(name2));
 
             // Cleanup
-            store.Unregister(name1, region1);
-            store.Unregister(name2, region2);
+            store.Unregister(name1);
+            store.Unregister(name2);
         }
 
-        [Test]
-        public void WeakReference_AllowsGarbageCollection()
-        {
-            // Arrange
-            var store = RegionStore.Instance;
-            string regionName = "TestRegion_" + Guid.NewGuid();
-
-            CreateAndRegisterRegion(store, regionName);
-
-            // Act
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-
-            // Give the cleanup timer a chance to run
-            Thread.Sleep(100);
-
-            IRegionElement region;
-            bool found = store.TryGetRegion(regionName, out region);
-
-            // Assert
-            Assert.That(found, Is.False, "Weak reference should allow GC");
-        }
-
-        private void CreateAndRegisterRegion(RegionStore store, string regionName)
-        {
-            var region = new MockRegionElement();
-            store.Register(regionName, region);
-        }
 
         [Test]
         public void RegionRegistered_EventFires_WhenRegionRegistered()
@@ -193,14 +162,14 @@ namespace NavigationLib.Tests.UseCases
             // Arrange
             var store = RegionStore.Instance;
             var region = new MockRegionElement();
-            string regionName = "TestRegion_" + Guid.NewGuid();
-            bool eventFired = false;
+            var regionName = "TestRegion_" + Guid.NewGuid();
+            var eventFired = false;
             string firedName = null;
 
             EventHandler<RegionEventArgs> handler = (sender, e) =>
             {
                 eventFired = true;
-                firedName = e.RegionName;
+                firedName  = e.RegionName;
             };
 
             // Act
@@ -213,7 +182,7 @@ namespace NavigationLib.Tests.UseCases
 
             // Cleanup
             store.RegionRegistered -= handler;
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
         }
 
         [Test]
@@ -222,21 +191,20 @@ namespace NavigationLib.Tests.UseCases
             // Arrange
             var store = RegionStore.Instance;
             var region = new MockRegionElement();
-            string regionName = "TestRegion_" + Guid.NewGuid();
-            bool eventFired = false;
+            var regionName = "TestRegion_" + Guid.NewGuid();
+            var eventFired = false;
             string firedName = null;
 
             EventHandler<RegionEventArgs> handler = (sender, e) =>
             {
                 eventFired = true;
-                firedName = e.RegionName;
+                firedName  = e.RegionName;
             };
-
             store.Register(regionName, region);
 
             // Act
             store.RegionUnregistered += handler;
-            store.Unregister(regionName, region);
+            store.Unregister(regionName);
 
             // Assert
             Assert.That(eventFired, Is.True);
