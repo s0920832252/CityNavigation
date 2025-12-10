@@ -41,7 +41,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Adapters\IDispatcher.cs" />
-    <Compile Include="Adapters\IRegionElement.cs" />
     <Compile Include="Adapters\NavigationHost.cs" />
     <Compile Include="Adapters\NavigationHostResult.cs" />
     <Compile Include="Entities\Exceptions\InvalidPathException.cs" />
@@ -53,6 +52,7 @@
     <Compile Include="FrameworksAndDrivers\Region.cs" />
     <Compile Include="FrameworksAndDrivers\RegionElementAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UseCases\IRegionElement.cs" />
     <Compile Include="UseCases\NavigationService.cs" />
     <Compile Include="UseCases\PathValidator.cs" />
     <Compile Include="UseCases\RegionLifecycleManager.cs" />

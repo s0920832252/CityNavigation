@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using NavigationLib.Adapters;
+using NavigationLib.UseCases;
 
 namespace NavigationLib.FrameworksAndDrivers
 {
@@ -103,6 +104,26 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
+        ///     訂閱元素離開視覺樹的事件。
+        /// </summary>
+        /// <param name="handler">元素離開視覺樹時的處理常式。</param>
+        /// <returns>IDisposable 實例，用於取消訂閱。</returns>
+        public IDisposable SubscribeUnloaded(EventHandler handler)
+        {
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            // 將 EventHandler 包裝成 WPF 的 RoutedEventHandler
+            EventHandler<RoutedEventArgs> routedHandler = (sender, e) => handler(sender, EventArgs.Empty);
+
+            UnloadedEventManager.AddHandler(Element, routedHandler);
+
+            return new UnloadedSubscription(Element, routedHandler);
+        }
+
+        /// <summary>
         ///     訂閱 Unloaded 事件（由 RegionLifecycleManager 使用）。
         /// </summary>
         /// <param name="handler">事件處理器。</param>
@@ -128,6 +149,33 @@ namespace NavigationLib.FrameworksAndDrivers
             }
 
             UnloadedEventManager.RemoveHandler(Element, handler);
+        }
+
+        /// <summary>
+        ///     封裝 Unloaded 事件訂閱的 IDisposable 實作。
+        /// </summary>
+        private sealed class UnloadedSubscription : IDisposable
+        {
+            private readonly FrameworkElement _element;
+            private readonly EventHandler<RoutedEventArgs> _handler;
+            private bool _disposed;
+
+            public UnloadedSubscription(FrameworkElement element, EventHandler<RoutedEventArgs> handler)
+            {
+                _element = element ?? throw new ArgumentNullException(nameof(element));
+                _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            }
+
+            public void Dispose()
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                UnloadedEventManager.RemoveHandler(_element, _handler);
+                _disposed = true;
+            }
         }
 
         /// <summary>

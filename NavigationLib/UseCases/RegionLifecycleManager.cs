@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Windows;
-using NavigationLib.Adapters;
-using NavigationLib.FrameworksAndDrivers;
 
 namespace NavigationLib.UseCases
 {
@@ -111,55 +108,43 @@ namespace NavigationLib.UseCases
         /// <summary>
         ///     訂閱元素的 Unloaded 事件。
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>記憶體管理說明：</strong>
+        ///     </para>
+        ///     <para>
+        ///         此方法中的 Lambda handler 會捕獲 <paramref name="element"/> 變數（閉包），
+        ///         形成 handler → element 的強引用。同時，element.SubscribeUnloaded(handler) 
+        ///         會在 element 內部透過 WeakEventManager 訂閱 handler，形成 element → handler 的弱引用。
+        ///     </para>
+        ///     <para>
+        ///         雖然看似循環引用，但因為其中一邊是弱引用（WeakEventManager），
+        ///         當外部移除對 handler 的強引用時（例如透過 UnloadSubscription.Dispose），
+        ///         GC 仍可正常回收這些物件，不會造成記憶體洩漏。
+        ///     </para>
+        ///     <para>
+        ///         引用關係：
+        ///         <list type="bullet">
+        ///             <item>Lambda handler → element（強引用，閉包捕獲）</item>
+        ///             <item>element → handler（弱引用，透過 WeakEventManager）</item>
+        ///             <item>UnloadSubscription.Dispose() 會明確移除訂閱，確保資源釋放</item>
+        ///         </list>
+        ///     </para>
+        /// </remarks>
         private IDisposable SubscribeToUnloaded(string regionName, IRegionElement element, Action<string> onUnload)
         {
-            if (element is RegionElementAdapter adapter)
+            EventHandler handler = (sender, e) =>
             {
-                EventHandler<RoutedEventArgs> handler = (sender, e) =>
+                // 確認元素真的離開視覺樹（避免 TabControl 切換等情況的誤判）
+                // 注意：雖然 Lambda 捕獲了 element，但不會造成記憶體洩漏（見上方 remarks）
+                if (!element.IsInVisualTree())
                 {
-                    // 確認元素真的離開視覺樹
-                    if (!adapter.IsInVisualTree())
-                    {
-                        Debug.WriteLine($"[RegionLifecycleManager] Region '{regionName}' element unloaded, triggering cleanup.");
-                        onUnload(regionName);
-                    }
-                };
-
-                // 透過 adapter 的公開方法訂閱
-                adapter.SubscribeUnloaded(handler);
-
-                // 返回 IDisposable 以便取消訂閱
-                return new UnloadSubscription(adapter, handler);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        ///     封裝 Unloaded 事件訂閱的 IDisposable 實作。
-        /// </summary>
-        private class UnloadSubscription : IDisposable
-        {
-            private readonly RegionElementAdapter _adapter;
-            private readonly EventHandler<RoutedEventArgs> _handler;
-            private bool _disposed;
-
-            public UnloadSubscription(RegionElementAdapter adapter, EventHandler<RoutedEventArgs> handler)
-            {
-                _adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
-                _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            }
-
-            public void Dispose()
-            {
-                if (_disposed)
-                {
-                    return;
+                    Debug.WriteLine($"[RegionLifecycleManager] Region '{regionName}' element unloaded, triggering cleanup.");
+                    onUnload(regionName);
                 }
+            };
 
-                _adapter.UnsubscribeUnloaded(_handler);
-                _disposed = true;
-            }
+            return element.SubscribeUnloaded(handler);
         }
     }
 }

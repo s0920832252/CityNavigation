@@ -1,5 +1,6 @@
 using System;
 using NavigationLib.Adapters;
+using NavigationLib.UseCases;
 
 namespace NavigationLib.Tests.TestHelpers
 {
@@ -62,6 +63,20 @@ namespace NavigationLib.Tests.TestHelpers
         public bool IsSameElement(IRegionElement other)
         {
             return ReferenceEquals(this, other);
+        }
+
+        public IDisposable SubscribeUnloaded(EventHandler handler)
+        {
+            // Mock implementation: return empty disposable
+            return new MockUnloadedSubscription();
+        }
+
+        private class MockUnloadedSubscription : IDisposable
+        {
+            public void Dispose()
+            {
+                // No-op for mock
+            }
         }
     }
 }
