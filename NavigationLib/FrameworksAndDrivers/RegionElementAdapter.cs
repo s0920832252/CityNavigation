@@ -40,6 +40,14 @@ namespace NavigationLib.FrameworksAndDrivers
             }
 
             _disposed = true;
+
+            // 現階段沒有需要顯式釋放的資源：
+            // - Unloaded 訂閱由 RegionLifecycleManager 管理，透過 UnloadedSubscription.Dispose() 移除
+            // - DataContextChanged 訂閱透過 WeakEventManager 管理，使用弱引用
+            //
+            // 保留 IDisposable 介面是為了：
+            // - 配合 RegionStore.CleanupElement 的生命週期管理
+            // - 未來若 Adapter 新增需釋放資源，可以在此集中處理
         }
 
         /// <summary>
@@ -121,34 +129,6 @@ namespace NavigationLib.FrameworksAndDrivers
             UnloadedEventManager.AddHandler(Element, routedHandler);
 
             return new UnloadedSubscription(Element, routedHandler);
-        }
-
-        /// <summary>
-        ///     訂閱 Unloaded 事件（由 RegionLifecycleManager 使用）。
-        /// </summary>
-        /// <param name="handler">事件處理器。</param>
-        internal void SubscribeUnloaded(EventHandler<RoutedEventArgs> handler)
-        {
-            if (handler == null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            UnloadedEventManager.AddHandler(Element, handler);
-        }
-
-        /// <summary>
-        ///     取消訂閱 Unloaded 事件。
-        /// </summary>
-        /// <param name="handler">事件處理器。</param>
-        internal void UnsubscribeUnloaded(EventHandler<RoutedEventArgs> handler)
-        {
-            if (handler == null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
-
-            UnloadedEventManager.RemoveHandler(Element, handler);
         }
 
         /// <summary>
