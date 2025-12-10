@@ -67,18 +67,16 @@ namespace NavigationLib.Adapters
             int timeoutMs = DefaultTimeoutMs)
         {
             // 建立橋接 callback，將內部的 NavigationResult 轉換為對外的 NavigationHostResult
-            Action<Entities.NavigationResult> innerCallback = null;
+            Action<NavigationResult> innerCallback = null;
 
             if (callback != null)
             {
                 innerCallback = result =>
                 {
-                    var hostResult = new NavigationHostResult(
-                        result.Success,
+                    var hostResult = new NavigationHostResult(result.Success,
                         result.FailedAtSegment,
                         result.ErrorMessage,
                         result.Exception);
-
                     callback(hostResult);
                 };
             }

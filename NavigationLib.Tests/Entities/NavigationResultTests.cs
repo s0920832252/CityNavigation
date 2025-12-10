@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using NavigationLib.Entities;
+using NavigationLib.UseCases;
 
 namespace NavigationLib.Tests.Entities
 {

@@ -1,29 +1,29 @@
 using System;
 
-namespace NavigationLib.Entities
+namespace NavigationLib.UseCases
 {
     /// <summary>
-    ///     è¡¨ç¤ºå°èˆªæ“ä½œçš„çµæœï¼ˆå…§éƒ¨ Use Case æ¨¡å‹ï¼‰ã€‚
-    ///     æ­¤é¡åˆ¥ç‚ºä¸å¯è®Šï¼ˆimmutableï¼‰ï¼Œæ‰€æœ‰å±¬æ€§åƒ…èƒ½é€éå»ºæ§‹å­æˆ–éœæ…‹å·¥å» æ–¹æ³•åˆå§‹åŒ–ã€‚
+    ///     ªí¥Ü¾É¯è¾Ş§@ªºµ²ªG¡]Use Cases ¼h¿é¥X¼Ò«¬¡^¡C
+    ///     ¦¹Ãş§O¬°¤£¥iÅÜ¡]immutable¡^¡A©Ò¦³Äİ©Ê¶È¯à³z¹L«Øºc¤l©ÎÀRºA¤u¼t¤èªkªì©l¤Æ¡C
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         æ­¤é¡åˆ¥ç‚º Use Cases å±¤å…§éƒ¨ä½¿ç”¨çš„çµæœæ¨¡å‹ã€‚
-    ///         å¤–éƒ¨ä½¿ç”¨è€…è«‹é€é NavigationLib.Adapters.NavigationHostResult æ¥æ”¶å°èˆªçµæœã€‚
+    ///         ¦¹Ãş§O¬° Use Cases ¼h¤º³¡¨Ï¥Îªºµ²ªG¼Ò«¬¡A¥Ñ NavigationService ²£¥Í¡C
+    ///         ¥~³¡¨Ï¥ÎªÌ½Ğ³z¹L NavigationLib.Adapters.NavigationHostResult ±µ¦¬¾É¯èµ²ªG¡C
     ///     </para>
     ///     <para>
-    ///         å»ºè­°ä½¿ç”¨ <see cref="CreateSuccess" /> å’Œ <see cref="CreateFailure" /> éœæ…‹æ–¹æ³•å»ºç«‹å¯¦ä¾‹ã€‚
+    ///         «ØÄ³¨Ï¥Î <see cref="CreateSuccess" /> ©M <see cref="CreateFailure" /> ÀRºA¤èªk«Ø¥ß¹ê¨Ò¡C
     ///     </para>
     /// </remarks>
     internal class NavigationResult
     {
         /// <summary>
-        ///     åˆå§‹åŒ– NavigationResult çš„æ–°åŸ·è¡Œå€‹é«”ã€‚
+        ///     ªì©l¤Æ NavigationResult ªº·s°õ¦æ­ÓÅé¡C
         /// </summary>
-        /// <param name="success">å°èˆªæ˜¯å¦æˆåŠŸã€‚</param>
-        /// <param name="failedAtSegment">å¤±æ•—çš„æ®µè½åç¨±ï¼ˆæˆåŠŸæ™‚ç‚º nullï¼‰ã€‚</param>
-        /// <param name="errorMessage">éŒ¯èª¤è¨Šæ¯ï¼ˆæˆåŠŸæ™‚ç‚º nullï¼‰ã€‚</param>
-        /// <param name="exception">ä¾‹å¤–ç‰©ä»¶ï¼ˆè‹¥æœ‰ï¼‰ã€‚</param>
+        /// <param name="success">¾É¯è¬O§_¦¨¥\¡C</param>
+        /// <param name="failedAtSegment">¥¢±Ñªº¬q¸¨¦WºÙ¡]¦¨¥\®É¬° null¡^¡C</param>
+        /// <param name="errorMessage">¿ù»~°T®§¡]¦¨¥\®É¬° null¡^¡C</param>
+        /// <param name="exception">¨Ò¥~ª«¥ó¡]­Y¦³¡^¡C</param>
         public NavigationResult(bool success, string failedAtSegment, string errorMessage, Exception exception)
         {
             Success         = success;
@@ -33,32 +33,32 @@ namespace NavigationLib.Entities
         }
 
         /// <summary>
-        ///     å–å¾—æŒ‡ç¤ºå°èˆªæ˜¯å¦æˆåŠŸçš„å€¼ã€‚
+        ///     ¨ú±o«ü¥Ü¾É¯è¬O§_¦¨¥\ªº­È¡C
         /// </summary>
         public bool Success { get; }
 
         /// <summary>
-        ///     å–å¾—å°èˆªå¤±æ•—æ™‚çš„æ®µè½åç¨±ï¼ˆregion åç¨±ï¼‰ã€‚
-        ///     è‹¥å°èˆªæˆåŠŸï¼Œæ­¤å€¼ç‚º nullã€‚
+        ///     ¨ú±o¾É¯è¥¢±Ñ®Éªº¬q¸¨¦WºÙ¡]region ¦WºÙ¡^¡C
+        ///     ­Y¾É¯è¦¨¥\¡A¦¹­È¬° null¡C
         /// </summary>
         public string FailedAtSegment { get; }
 
         /// <summary>
-        ///     å–å¾—å¤±æ•—æ™‚çš„éŒ¯èª¤è¨Šæ¯ã€‚
-        ///     è‹¥å°èˆªæˆåŠŸï¼Œæ­¤å€¼ç‚º nullã€‚
+        ///     ¨ú±o¥¢±Ñ®Éªº¿ù»~°T®§¡C
+        ///     ­Y¾É¯è¦¨¥\¡A¦¹­È¬° null¡C
         /// </summary>
         public string ErrorMessage { get; }
 
         /// <summary>
-        ///     å–å¾—å°èˆªéç¨‹ä¸­æ‹‹å‡ºçš„ä¾‹å¤–ï¼ˆè‹¥æœ‰ï¼‰ã€‚
-        ///     è‹¥æœªç™¼ç”Ÿä¾‹å¤–ï¼Œæ­¤å€¼ç‚º nullã€‚
+        ///     ¨ú±o¾É¯è¹Lµ{¤¤©ß¥Xªº¨Ò¥~¡]­Y¦³¡^¡C
+        ///     ­Y¥¼µo¥Í¨Ò¥~¡A¦¹­È¬° null¡C
         /// </summary>
         public Exception Exception { get; }
 
         /// <summary>
-        ///     å»ºç«‹è¡¨ç¤ºæˆåŠŸå°èˆªçš„ NavigationResultã€‚
+        ///     «Ø¥ßªí¥Ü¦¨¥\¾É¯èªº NavigationResult¡C
         /// </summary>
-        /// <returns>è¡¨ç¤ºæˆåŠŸçš„ NavigationResult åŸ·è¡Œå€‹é«”ã€‚</returns>
+        /// <returns>ªí¥Ü¦¨¥\ªº NavigationResult °õ¦æ­ÓÅé¡C</returns>
         /// <example>
         ///     <code>
         /// var result = NavigationResult.CreateSuccess();
@@ -71,14 +71,14 @@ namespace NavigationLib.Entities
         public static NavigationResult CreateSuccess() => new NavigationResult(true, null, null, null);
 
         /// <summary>
-        ///     å»ºç«‹è¡¨ç¤ºå¤±æ•—å°èˆªçš„ NavigationResultã€‚
+        ///     «Ø¥ßªí¥Ü¥¢±Ñ¾É¯èªº NavigationResult¡C
         /// </summary>
-        /// <param name="failedAtSegment">å°èˆªå¤±æ•—çš„æ®µè½åç¨±ã€‚</param>
-        /// <param name="errorMessage">æè¿°å¤±æ•—åŸå› çš„è¨Šæ¯ã€‚</param>
-        /// <param name="exception">ç›¸é—œçš„ä¾‹å¤–ç‰©ä»¶ï¼ˆå¯é¸ï¼‰ã€‚</param>
-        /// <returns>è¡¨ç¤ºå¤±æ•—çš„ NavigationResult åŸ·è¡Œå€‹é«”ã€‚</returns>
+        /// <param name="failedAtSegment">¾É¯è¥¢±Ñªº¬q¸¨¦WºÙ¡C</param>
+        /// <param name="errorMessage">´y­z¥¢±Ñ­ì¦]ªº°T®§¡C</param>
+        /// <param name="exception">¬ÛÃöªº¨Ò¥~ª«¥ó¡]¥i¿ï¡^¡C</param>
+        /// <returns>ªí¥Ü¥¢±Ñªº NavigationResult °õ¦æ­ÓÅé¡C</returns>
         /// <exception cref="ArgumentNullException">
-        ///     ç•¶ <paramref name="errorMessage" /> ç‚º null æ™‚æ‹‹å‡ºã€‚
+        ///     ·í <paramref name="errorMessage" /> ¬° null ®É©ß¥X¡C
         /// </exception>
         /// <example>
         ///     <code>
@@ -100,9 +100,9 @@ namespace NavigationLib.Entities
         }
 
         /// <summary>
-        ///     å‚³å›ä»£è¡¨ç›®å‰ç‰©ä»¶çš„å­—ä¸²ã€‚
+        ///     ¶Ç¦^¥Nªí¥Ø«eª«¥óªº¦r¦ê¡C
         /// </summary>
-        /// <returns>åŒ…å«å°èˆªçµæœè©³ç´°è³‡è¨Šçš„å­—ä¸²ã€‚</returns>
+        /// <returns>¥]§t¾É¯èµ²ªG¸Ô²Ó¸ê°Tªº¦r¦ê¡C</returns>
         public override string ToString()
         {
             if (Success)

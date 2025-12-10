@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using NavigationLib.Adapters;
 using NavigationLib.Entities;
 using NavigationLib.Entities.Exceptions;
 
@@ -143,7 +142,6 @@ namespace NavigationLib.UseCases
                         // Timeout
                         RegionStore.Instance.RegionRegistered -= handler;
                         timer?.Dispose();
-
                         var errorMsg = $"Region '{segmentName}' was not registered within timeout ({state.TimeoutMs}ms).";
 
                         InvokeCallback(state.Callback,
