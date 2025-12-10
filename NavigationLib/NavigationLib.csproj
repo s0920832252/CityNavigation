@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="Adapters\IDispatcher.cs" />
     <Compile Include="Adapters\IRegionElement.cs" />
+    <Compile Include="Adapters\NavigationHost.cs" />
+    <Compile Include="Adapters\NavigationHostResult.cs" />
     <Compile Include="Entities\Exceptions\InvalidPathException.cs" />
     <Compile Include="Entities\Exceptions\NavigationException.cs" />
     <Compile Include="Entities\INavigableViewModel.cs" />

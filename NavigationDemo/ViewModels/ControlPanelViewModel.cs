@@ -1,5 +1,5 @@
 using NavigationDemo.Common;
-using NavigationLib.UseCases;
+using NavigationLib.Adapters;
 using System;
 using System.Windows.Input;
 
@@ -37,7 +37,7 @@ namespace NavigationDemo.ViewModels
             
             var startTime = DateTime.Now;
 
-            NavigationService.RequestNavigate(
+            NavigationHost.RequestNavigate(
                 path,
                 parameter: $"Navigation to {path} at {DateTime.Now:HH:mm:ss}",
                 callback: result =>

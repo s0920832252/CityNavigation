@@ -8,36 +8,25 @@ using NavigationLib.Entities.Exceptions;
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    ///     提供導航服務，負責協調路徑解析、region 查找、ViewModel 呼叫等導航流程。
+    ///     導航服務的內部實作（Use Case 層）。
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         NavigationService 採用 Prism 風格的事件驅動、非阻塞導航模型。
+    ///         負責協調路徑解析、region 查找、ViewModel 呼叫等導航流程。
+    ///     </para>
+    ///     <para>
+    ///         採用 Prism 風格的事件驅動、非阻塞導航模型。
     ///         RequestNavigate 方法立即返回，並透過 callback 回報結果。
     ///     </para>
     ///     <para>
     ///         支援延遲建立的 region（DataTemplate/ControlTemplate 情境）：
     ///         若 region 尚未註冊或 DataContext 尚未就緒，服務會等待直至就緒或 timeout。
     ///     </para>
+    ///     <para>
+    ///         <strong>外部使用者請透過 NavigationLib.Adapters.NavigationHost (OHS) 呼叫導航功能。</strong>
+    ///     </para>
     /// </remarks>
-    /// <example>
-    ///     <code>
-    /// NavigationService.RequestNavigate("Shell/Level1/Level2", 
-    ///     parameter: myData,
-    ///     callback: result =>
-    ///     {
-    ///         if (result.Success)
-    ///         {
-    ///             Console.WriteLine("Navigation succeeded!");
-    ///         }
-    ///         else
-    ///         {
-    ///             Console.WriteLine($"Navigation failed: {result.ErrorMessage}");
-    ///         }
-    ///     });
-    /// </code>
-    /// </example>
-    public static class NavigationService
+    internal static class NavigationService
     {
         private const int DefaultTimeoutMs = 10000; // 10 seconds
 

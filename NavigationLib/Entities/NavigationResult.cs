@@ -3,14 +3,19 @@ using System;
 namespace NavigationLib.Entities
 {
     /// <summary>
-    ///     表示導航操作的結果。
+    ///     表示導航操作的結果（內部 Use Case 模型）。
     ///     此類別為不可變（immutable），所有屬性僅能透過建構子或靜態工廠方法初始化。
     /// </summary>
     /// <remarks>
-    ///     NavigationResult 用於透過 callback 回報導航是否成功，以及失敗時的詳細資訊。
-    ///     建議使用 <see cref="CreateSuccess" /> 和 <see cref="CreateFailure" /> 靜態方法建立實例。
+    ///     <para>
+    ///         此類別為 Use Cases 層內部使用的結果模型。
+    ///         外部使用者請透過 NavigationLib.Adapters.NavigationHostResult 接收導航結果。
+    ///     </para>
+    ///     <para>
+    ///         建議使用 <see cref="CreateSuccess" /> 和 <see cref="CreateFailure" /> 靜態方法建立實例。
+    ///     </para>
     /// </remarks>
-    public class NavigationResult
+    internal class NavigationResult
     {
         /// <summary>
         ///     初始化 NavigationResult 的新執行個體。
