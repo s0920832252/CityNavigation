@@ -4,64 +4,64 @@ using NavigationLib.Adapters;
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    ///     ¾É¯è¬yµ{©Ò»Ýªº Region ¤¸¯À©â¶H¡C
+    ///     ï¿½É¯ï¿½yï¿½{ï¿½Ò»Ýªï¿½ Region ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Hï¿½C
     /// </summary>
     /// <remarks>
-    ///     ¦¹¤¶­±©w¸q¤F Use Cases ¼h¾Þ§@ UI Region ¤¸¯À©Ò»Ýªº©Ò¦³¯à¤O¡A
-    ///     ¹jÂ÷¹ï¨ãÅé UI Framework¡]¦p WPF¡^ªº¨Ì¿à¡C
-    ///     ¹ê§@ªÌ³q±`¦ì©ó Adapters ©Î FrameworksAndDrivers ¼h¡C
+    ///     ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½qï¿½F Use Cases ï¿½hï¿½Þ§@ UI Region ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ýªï¿½ï¿½Ò¦ï¿½ï¿½ï¿½Oï¿½A
+    ///     ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI Frameworkï¿½]ï¿½p WPFï¿½^ï¿½ï¿½ï¿½Ì¿ï¿½C
+    ///     ï¿½ï¿½@ï¿½Ì³qï¿½`ï¿½ï¿½ï¿½ Adapters ï¿½ï¿½ FrameworksAndDrivers ï¿½hï¿½C
     /// </remarks>
-    public interface IRegionElement
+    internal interface IRegionElement
     {
         /// <summary>
-        ///     ¨ú±o¤¸¯Àªº DataContext¡C
+        ///     ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DataContextï¿½C
         /// </summary>
-        /// <returns>DataContext ª«¥ó¡A­Y¥¼³]©w«h¬° null¡C</returns>
+        /// <returns>DataContext ï¿½ï¿½ï¿½ï¿½Aï¿½Yï¿½ï¿½ï¿½]ï¿½wï¿½hï¿½ï¿½ nullï¿½C</returns>
         object GetDataContext();
 
         /// <summary>
-        ///     ­q¾\ DataContext ÅÜ§ó¨Æ¥ó¡C
+        ///     ï¿½qï¿½\ DataContext ï¿½Ü§ï¿½Æ¥ï¿½C
         /// </summary>
-        /// <param name="handler">DataContext ÅÜ§ó®Éªº³B²z±`¦¡¡C</param>
+        /// <param name="handler">DataContext ï¿½Ü§ï¿½Éªï¿½ï¿½Bï¿½zï¿½`ï¿½ï¿½ï¿½C</param>
         void AddDataContextChangedHandler(EventHandler handler);
 
         /// <summary>
-        ///     ¨ú®ø­q¾\ DataContext ÅÜ§ó¨Æ¥ó¡C
+        ///     ï¿½ï¿½ï¿½ï¿½ï¿½qï¿½\ DataContext ï¿½Ü§ï¿½Æ¥ï¿½C
         /// </summary>
-        /// <param name="handler">­n²¾°£ªº³B²z±`¦¡¡C</param>
+        /// <param name="handler">ï¿½nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½zï¿½`ï¿½ï¿½ï¿½C</param>
         void RemoveDataContextChangedHandler(EventHandler handler);
 
         /// <summary>
-        ///     ¨ú±o¦¹¤¸¯Àªº Dispatcher¡A¥Î©ó±N¾Þ§@½Õ«×¨ì UI °õ¦æºü¡C
+        ///     ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Dispatcherï¿½Aï¿½Î©ï¿½Nï¿½Þ§@ï¿½Õ«×¨ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½C
         /// </summary>
-        /// <returns>IDispatcher ¤¶­±¹ê¨Ò¡C</returns>
+        /// <returns>IDispatcher ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¡C</returns>
         IDispatcher GetDispatcher();
 
         /// <summary>
-        ///     ÀË¬d¦¹¤¸¯À¬O§_¤´¦bµøÄ±¾ð¤¤¡C
+        ///     ï¿½Ë¬dï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½_ï¿½ï¿½ï¿½bï¿½ï¿½Ä±ï¿½ð¤¤¡C
         /// </summary>
-        /// <returns>­Y¤¸¯À¤´¦bµøÄ±¾ð¤¤«h¬° true¡A§_«h¬° false¡C</returns>
+        /// <returns>ï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½ï¿½Ä±ï¿½ð¤¤«hï¿½ï¿½ trueï¿½Aï¿½_ï¿½hï¿½ï¿½ falseï¿½C</returns>
         bool IsInVisualTree();
 
         /// <summary>
-        ///     ÀË¬d¦¹ Region ¤¸¯À¬O§_»P¥t¤@­Ó Region ¤¸¯À¥]¸Ë¬Û¦Pªº©³¼h UI ¤¸¯À¡C
+        ///     ï¿½Ë¬dï¿½ï¿½ Region ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½_ï¿½Pï¿½tï¿½@ï¿½ï¿½ Region ï¿½ï¿½ï¿½ï¿½ï¿½]ï¿½Ë¬Û¦Pï¿½ï¿½ï¿½ï¿½ï¿½h UI ï¿½ï¿½ï¿½ï¿½ï¿½C
         /// </summary>
-        /// <param name="other">­n¤ñ¹ïªº¥t¤@­Ó Region ¤¸¯À¡C</param>
-        /// <returns>­Y¨âªÌ¥]¸Ë¬Û¦Pªº©³¼h¤¸¯À«h¬° true¡A§_«h¬° false¡C</returns>
+        /// <param name="other">ï¿½nï¿½ï¿½ïªºï¿½tï¿½@ï¿½ï¿½ Region ï¿½ï¿½ï¿½ï¿½ï¿½C</param>
+        /// <returns>ï¿½Yï¿½ï¿½Ì¥]ï¿½Ë¬Û¦Pï¿½ï¿½ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½hï¿½ï¿½ trueï¿½Aï¿½_ï¿½hï¿½ï¿½ falseï¿½C</returns>
         /// <remarks>
-        ///     ¦¹¤èªk¥Î©ó§PÂ_¨â­Ó¤£¦Pªº IRegionElement ¹ê¨Ò¬O§_¥Nªí¦P¤@­Ó UI ¤¸¯À¡A
-        ///     Á×§K­«½Æµù¥U¬Û¦Pªº¤¸¯À¨ì Region¡C
+        ///     ï¿½ï¿½ï¿½ï¿½kï¿½Î©ï¿½Pï¿½_ï¿½ï¿½Ó¤ï¿½ï¿½Pï¿½ï¿½ IRegionElement ï¿½ï¿½Ò¬Oï¿½_ï¿½Nï¿½ï¿½ï¿½Pï¿½@ï¿½ï¿½ UI ï¿½ï¿½ï¿½ï¿½ï¿½A
+        ///     ï¿½×§Kï¿½ï¿½ï¿½Æµï¿½ï¿½Uï¿½Û¦Pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Regionï¿½C
         /// </remarks>
         bool IsSameElement(IRegionElement other);
 
         /// <summary>
-        ///     ­q¾\¤¸¯ÀÂ÷¶}µøÄ±¾ðªº¨Æ¥ó¡C
+        ///     ï¿½qï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½ï¿½Ä±ï¿½ðªº¨Æ¥ï¿½C
         /// </summary>
-        /// <param name="handler">¤¸¯ÀÂ÷¶}µøÄ±¾ð®Éªº³B²z±`¦¡¡C</param>
-        /// <returns>IDisposable ¹ê¨Ò¡A¥Î©ó¨ú®ø­q¾\¡C</returns>
+        /// <param name="handler">ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½ï¿½Ä±ï¿½ï¿½Éªï¿½ï¿½Bï¿½zï¿½`ï¿½ï¿½ï¿½C</param>
+        /// <returns>IDisposable ï¿½ï¿½Ò¡Aï¿½Î©ï¿½ï¿½ï¿½ï¿½ï¿½qï¿½\ï¿½C</returns>
         /// <remarks>
-        ///     ¦¹¤èªk¥Î©ó Region ¥Í©R¶g´ÁºÞ²z¡A·í¤¸¯À±q UI ¾ð¨ø¸ü®É¡A
-        ///     ¥i¥H³z¹L¦¹¨Æ¥óÄ²µo²M²z°Ê§@¡]¦p¸Ñ°£ Region µù¥U¡^¡C
+        ///     ï¿½ï¿½ï¿½ï¿½kï¿½Î©ï¿½ Region ï¿½Í©Rï¿½gï¿½ï¿½ï¿½Þ²zï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½q UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¡A
+        ///     ï¿½iï¿½Hï¿½zï¿½Lï¿½ï¿½ï¿½Æ¥ï¿½Ä²ï¿½oï¿½Mï¿½zï¿½Ê§@ï¿½]ï¿½pï¿½Ñ°ï¿½ Region ï¿½ï¿½ï¿½Uï¿½^ï¿½C
         /// </remarks>
         IDisposable SubscribeUnloaded(EventHandler handler);
     }

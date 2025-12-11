@@ -8,7 +8,7 @@ namespace NavigationLib.UseCases
     /// <summary>
     ///     Region 註冊事件的參數。
     /// </summary>
-    public class RegionEventArgs : EventArgs
+    internal class RegionEventArgs : EventArgs
     {
         /// <summary>
         ///     初始化 RegionEventArgs 的新執行個體。
@@ -57,7 +57,7 @@ namespace NavigationLib.UseCases
     ///         訂閱 Unloaded 事件並主動通知 RegionStore 移除，避免記憶體洩漏。
     ///     </para>
     /// </remarks>
-    public sealed class RegionStore
+    internal sealed class RegionStore
     {
         private readonly RegionLifecycleManager _lifecycleManager;
         private readonly object _lock = new object();

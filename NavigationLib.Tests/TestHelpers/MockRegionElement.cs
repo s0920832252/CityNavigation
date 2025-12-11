@@ -7,7 +7,7 @@ namespace NavigationLib.Tests.TestHelpers
     /// <summary>
     /// Mock implementation of IRegionElement for testing.
     /// </summary>
-    public class MockRegionElement : IRegionElement
+    internal class MockRegionElement : IRegionElement
     {
         private object _dataContext;
         private event EventHandler _dataContextChanged;
