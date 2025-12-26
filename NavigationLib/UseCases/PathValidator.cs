@@ -5,36 +5,36 @@ using NavigationLib.Entities.Exceptions;
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    ///     路徑驗證器，用於驗證和解析導航路徑。
+    ///     Path validator used for validating and parsing navigation paths.
     /// </summary>
     internal static class PathValidator
     {
         private static readonly Regex SegmentPattern = new Regex(@"^[a-zA-Z0-9_-]+$", RegexOptions.Compiled);
 
         /// <summary>
-        ///     驗證並解析導航路徑。
+        ///     Validates and parses the navigation path.
         /// </summary>
-        /// <param name="path">要驗證的路徑。</param>
-        /// <returns>解析後的段落陣列。</returns>
-        /// <exception cref="InvalidPathException">當路徑無效時拋出。</exception>
+        /// <param name="path">The path to validate.</param>
+        /// <returns>Array of parsed segments.</returns>
+        /// <exception cref="InvalidPathException">Thrown when the path is invalid.</exception>
         public static string[] ValidateAndParse(string path)
         {
-            // 檢查 null 或空字串
+            // Check for null or empty string
             if (string.IsNullOrEmpty(path))
             {
                 throw new InvalidPathException(path, "Path cannot be null or empty.");
             }
 
-            // 分割路徑
+            // Split the path
             var segments = path.Split(new[] { '/', }, StringSplitOptions.RemoveEmptyEntries);
 
-            // 檢查是否有有效段落
+            // Check if there are valid segments
             if (segments.Length == 0)
             {
                 throw new InvalidPathException(path, "Path must contain at least one valid segment.");
             }
 
-            // 驗證每個段落
+            // Validate each segment
             for (var i = 0; i < segments.Length; i++)
             {
                 var segment = segments[i];

@@ -3,27 +3,27 @@ using System;
 namespace NavigationLib.Adapters
 {
     /// <summary>
-    /// 隔離 WPF Dispatcher 依賴的介面，用於將操作調度到 UI 執行緒。
+    /// Interface for isolating WPF Dispatcher dependencies, used to dispatch operations to the UI thread.
     /// </summary>
     public interface IDispatcher
     {
         /// <summary>
-        /// 檢查當前執行緒是否為 UI 執行緒。
+        /// Checks whether the current thread is the UI thread.
         /// </summary>
-        /// <returns>若當前執行緒可存取 UI，則為 true；否則為 false。</returns>
+        /// <returns>True if the current thread can access the UI; otherwise, false.</returns>
         bool CheckAccess();
 
         /// <summary>
-        /// 在 UI 執行緒上同步執行指定的動作。
-        /// 若當前已在 UI 執行緒，則直接執行；否則透過 Dispatcher 調度。
+        /// Synchronously executes the specified action on the UI thread.
+        /// If already on the UI thread, executes directly; otherwise, dispatches through the Dispatcher.
         /// </summary>
-        /// <param name="action">要執行的動作。</param>
+        /// <param name="action">The action to execute.</param>
         void Invoke(Action action);
 
         /// <summary>
-        /// 在 UI 執行緒上非同步執行指定的動作。
+        /// Asynchronously executes the specified action on the UI thread.
         /// </summary>
-        /// <param name="action">要執行的動作。</param>
+        /// <param name="action">The action to execute.</param>
         void BeginInvoke(Action action);
     }
 }

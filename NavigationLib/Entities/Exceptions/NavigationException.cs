@@ -4,22 +4,22 @@ using System.Runtime.Serialization;
 namespace NavigationLib.Entities.Exceptions
 {
     /// <summary>
-    /// 當導航操作失敗時拋出的基礎例外。
+    /// Base exception thrown when a navigation operation fails.
     /// </summary>
     /// <remarks>
-    /// 此例外作為所有導航相關例外的基底類別。
-    /// 實際使用中，通常會透過 NavigationResult 回報錯誤，而非拋出此例外。
+    /// This exception serves as the base class for all navigation-related exceptions.
+    /// In practice, errors are typically reported via NavigationResult rather than throwing this exception.
     /// </remarks>
     [Serializable]
     public class NavigationException : Exception
     {
         /// <summary>
-        /// 取得導航失敗時的段落名稱（region 名稱）。
+        /// Gets the segment name (region name) where navigation failed.
         /// </summary>
         public string SegmentName { get; }
 
         /// <summary>
-        /// 初始化 NavigationException 的新執行個體。
+        /// Initializes a new instance of NavigationException.
         /// </summary>
         public NavigationException()
             : base("Navigation operation failed.")
@@ -27,29 +27,29 @@ namespace NavigationLib.Entities.Exceptions
         }
 
         /// <summary>
-        /// 使用指定的錯誤訊息初始化 NavigationException 的新執行個體。
+        /// Initializes a new instance of NavigationException with the specified error message.
         /// </summary>
-        /// <param name="message">說明錯誤的訊息。</param>
+        /// <param name="message">The message that describes the error.</param>
         public NavigationException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// 使用指定的錯誤訊息和內部例外初始化 NavigationException 的新執行個體。
+        /// Initializes a new instance of NavigationException with the specified error message and inner exception.
         /// </summary>
-        /// <param name="message">說明錯誤的訊息。</param>
-        /// <param name="innerException">造成目前例外的例外。</param>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that caused this exception.</param>
         public NavigationException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
         /// <summary>
-        /// 使用指定的段落名稱和錯誤訊息初始化 NavigationException 的新執行個體。
+        /// Initializes a new instance of NavigationException with the specified segment name and error message.
         /// </summary>
-        /// <param name="segmentName">導航失敗的段落名稱。</param>
-        /// <param name="message">說明錯誤的訊息。</param>
+        /// <param name="segmentName">The name of the segment where navigation failed.</param>
+        /// <param name="message">The message that describes the error.</param>
         public NavigationException(string segmentName, string message)
             : base(FormatMessage(segmentName, message))
         {
@@ -57,11 +57,11 @@ namespace NavigationLib.Entities.Exceptions
         }
 
         /// <summary>
-        /// 使用指定的段落名稱、錯誤訊息和內部例外初始化 NavigationException 的新執行個體。
+        /// Initializes a new instance of NavigationException with the specified segment name, error message, and inner exception.
         /// </summary>
-        /// <param name="segmentName">導航失敗的段落名稱。</param>
-        /// <param name="message">說明錯誤的訊息。</param>
-        /// <param name="innerException">造成目前例外的例外。</param>
+        /// <param name="segmentName">The name of the segment where navigation failed.</param>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that caused this exception.</param>
         public NavigationException(string segmentName, string message, Exception innerException)
             : base(FormatMessage(segmentName, message), innerException)
         {
@@ -69,10 +69,10 @@ namespace NavigationLib.Entities.Exceptions
         }
 
         /// <summary>
-        /// 使用序列化資料初始化 NavigationException 的新執行個體。
+        /// Initializes a new instance of NavigationException with serialization data.
         /// </summary>
-        /// <param name="info">SerializationInfo，包含序列化物件資料。</param>
-        /// <param name="context">StreamingContext，包含來源和目的端的內容資訊。</param>
+        /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
+        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
         protected NavigationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -80,10 +80,10 @@ namespace NavigationLib.Entities.Exceptions
         }
 
         /// <summary>
-        /// 設定 SerializationInfo，包含例外的相關資料。
+        /// Sets the SerializationInfo with information about the exception.
         /// </summary>
-        /// <param name="info">SerializationInfo，用於存放序列化物件資料。</param>
-        /// <param name="context">StreamingContext，包含來源和目的端的內容資訊。</param>
+        /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
+        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

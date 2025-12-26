@@ -4,29 +4,29 @@ using System.Linq;
 namespace NavigationLib.Entities
 {
     /// <summary>
-    ///     表示導航上下文，包含導航請求的所有相關資訊。
-    ///     此類別為不可變（immutable），所有屬性僅能透過建構子初始化。
+    ///     Represents the navigation context, containing all relevant information for a navigation request.
+    ///     This class is immutable; all properties can only be initialized through the constructor.
     /// </summary>
     /// <remarks>
-    ///     NavigationContext 會傳遞給每個 ViewModel 的 OnNavigation 方法，
-    ///     提供該段落在整個導航路徑中的位置資訊以及相關參數。
+    ///     NavigationContext is passed to each ViewModel's OnNavigation method,
+    ///     providing information about the segment's position in the navigation path and related parameters.
     /// </remarks>
     public class NavigationContext
     {
         /// <summary>
-        ///     初始化 NavigationContext 的新執行個體。
+        ///     Initializes a new instance of NavigationContext.
         /// </summary>
-        /// <param name="fullPath">完整的導航路徑。</param>
-        /// <param name="segmentIndex">當前段落的索引。</param>
-        /// <param name="segmentName">當前段落的名稱。</param>
-        /// <param name="allSegments">所有段落的陣列。</param>
-        /// <param name="isLastSegment">是否為最後一個段落。</param>
-        /// <param name="parameter">導航參數（可為 null）。</param>
+        /// <param name="fullPath">The full navigation path.</param>
+        /// <param name="segmentIndex">The index of the current segment.</param>
+        /// <param name="segmentName">The name of the current segment.</param>
+        /// <param name="allSegments">Array of all segments.</param>
+        /// <param name="isLastSegment">Whether this is the last segment.</param>
+        /// <param name="parameter">Navigation parameter (can be null).</param>
         /// <exception cref="ArgumentNullException">
-        ///     當 <paramref name="fullPath" />、<paramref name="segmentName" /> 或 <paramref name="allSegments" /> 為 null 時拋出。
+        ///     Thrown when <paramref name="fullPath" />, <paramref name="segmentName" />, or <paramref name="allSegments" /> is null.
         /// </exception>
         /// <exception cref="ArgumentOutOfRangeException">
-        ///     當 <paramref name="segmentIndex" /> 小於 0 時拋出。
+        ///     Thrown when <paramref name="segmentIndex" /> is less than 0.
         /// </exception>
         public NavigationContext(
             string fullPath,
@@ -44,60 +44,60 @@ namespace NavigationLib.Entities
             FullPath      = fullPath ?? throw new ArgumentNullException(nameof(fullPath));
             SegmentIndex  = segmentIndex;
             SegmentName   = segmentName ?? throw new ArgumentNullException(nameof(segmentName));
-            AllSegments   = allSegments?.ToArray() ?? throw new ArgumentNullException(nameof(allSegments)); // 複製陣列以確保不可變性
+            AllSegments   = allSegments?.ToArray() ?? throw new ArgumentNullException(nameof(allSegments)); // Copy array to ensure immutability
             IsLastSegment = isLastSegment;
             Parameter     = parameter;
         }
 
         /// <summary>
-        ///     取得完整的導航路徑（例如："Shell/Level1/Level2"）。
+        ///     Gets the full navigation path (e.g., "Shell/Level1/Level2").
         /// </summary>
         public string FullPath { get; }
 
         /// <summary>
-        ///     取得當前段落在路徑中的索引（從 0 開始）。
+        ///     Gets the index of the current segment in the path (zero-based).
         /// </summary>
         /// <remarks>
-        ///     例如，路徑 "Shell/Level1/Level2" 的段落索引分別為 0、1、2。
+        ///     For example, the path "Shell/Level1/Level2" has segment indices 0, 1, and 2 respectively.
         /// </remarks>
         public int SegmentIndex { get; }
 
         /// <summary>
-        ///     取得當前段落的名稱（即 region 名稱）。
+        ///     Gets the name of the current segment (i.e., the region name).
         /// </summary>
         /// <remarks>
-        ///     例如，路徑 "Shell/Level1/Level2" 的段落名稱分別為 "Shell"、"Level1"、"Level2"。
+        ///     For example, the path "Shell/Level1/Level2" has segment names "Shell", "Level1", and "Level2" respectively.
         /// </remarks>
         public string SegmentName { get; }
 
         /// <summary>
-        ///     取得路徑中所有段落的陣列。
+        ///     Gets the array of all segments in the path.
         /// </summary>
         /// <remarks>
-        ///     例如，路徑 "Shell/Level1/Level2" 的 AllSegments 為 ["Shell", "Level1", "Level2"]。
+        ///     For example, the path "Shell/Level1/Level2" has AllSegments = ["Shell", "Level1", "Level2"].
         /// </remarks>
         public string[] AllSegments { get; }
 
         /// <summary>
-        ///     取得指示當前段落是否為路徑中最後一個段落的值。
+        ///     Gets a value indicating whether the current segment is the last segment in the path.
         /// </summary>
         /// <remarks>
-        ///     最後一個段落通常是實際的目標視圖，可能需要特殊處理（例如處理參數）。
+        ///     The last segment is typically the actual target view and may require special handling (e.g., parameter processing).
         /// </remarks>
         public bool IsLastSegment { get; }
 
         /// <summary>
-        ///     取得導航參數（可選）。
+        ///     Gets the navigation parameter (optional).
         /// </summary>
         /// <remarks>
-        ///     此參數由呼叫 NavigationService.RequestNavigate 時傳入，可用於傳遞額外資訊給 ViewModel。
+        ///     This parameter is passed when calling NavigationService.RequestNavigate and can be used to pass additional information to the ViewModel.
         /// </remarks>
         public object Parameter { get; }
 
         /// <summary>
-        ///     傳回代表目前物件的字串。
+        ///     Returns a string representing the current object.
         /// </summary>
-        /// <returns>包含路徑和段落索引的字串。</returns>
+        /// <returns>A string containing the path and segment index.</returns>
         public override string ToString() =>
             string.Format("NavigationContext: Path={0}, Segment={1} (Index {2}/{3})",
                 FullPath,

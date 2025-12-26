@@ -5,7 +5,7 @@ using System.Diagnostics;
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    ///     管理 Region 的生命週期，包含自動訂閱 Unloaded 事件與清理資源。
+    ///     Manages the lifecycle of Regions, including automatic subscription to Unloaded events and resource cleanup.
     /// </summary>
     internal sealed class RegionLifecycleManager : IDisposable
     {
@@ -14,12 +14,12 @@ namespace NavigationLib.UseCases
         private bool _disposed;
 
         /// <summary>
-        ///     初始化 RegionLifecycleManager 的新執行個體。
+        ///     Initializes a new instance of RegionLifecycleManager.
         /// </summary>
         public RegionLifecycleManager() => _subscriptions = new Dictionary<string, IDisposable>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        ///     釋放所有資源並取消所有訂閱。
+        ///     Releases all resources and cancels all subscriptions.
         /// </summary>
         public void Dispose()
         {
@@ -42,11 +42,11 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     開始管理指定的 region，訂閱其 Unloaded 事件。
+        ///     Starts managing the specified region by subscribing to its Unloaded event.
         /// </summary>
-        /// <param name="regionName">Region 名稱。</param>
-        /// <param name="element">Region 元素。</param>
-        /// <param name="onUnload">元素離開視覺樹時的回呼（通常是解除註冊）。</param>
+        /// <param name="regionName">Region name.</param>
+        /// <param name="element">Region element.</param>
+        /// <param name="onUnload">Callback invoked when the element leaves the visual tree (typically for unregistration).</param>
         public void ManageRegion(string regionName, IRegionElement element, Action<string> onUnload)
         {
             if (regionName == null)
@@ -66,13 +66,13 @@ namespace NavigationLib.UseCases
 
             lock (_lock)
             {
-                // 若已在管理，先停止舊的訂閱
+                // If already managing, stop the old subscription first
                 if (_subscriptions.ContainsKey(regionName))
                 {
                     StopManaging(regionName);
                 }
 
-                // 訂閱 Unloaded 事件
+                // Subscribe to Unloaded event
                 var subscription = SubscribeToUnloaded(regionName, element, onUnload);
 
                 if (subscription != null)
@@ -84,9 +84,9 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     停止管理指定的 region，取消事件訂閱。
+        ///     Stops managing the specified region and cancels event subscriptions.
         /// </summary>
-        /// <param name="regionName">Region 名稱。</param>
+        /// <param name="regionName">Region name.</param>
         public void StopManaging(string regionName)
         {
             if (regionName == null)
@@ -106,38 +106,38 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     訂閱元素的 Unloaded 事件。
+        ///     Subscribes to the element's Unloaded event.
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         <strong>記憶體管理說明：</strong>
+        ///         <strong>Memory Management Notes:</strong>
         ///     </para>
         ///     <para>
-        ///         此方法中的 Local function Handler 會捕獲 <paramref name="element"/> 變數（閉包），
-        ///         形成 Handler → element 的強引用。同時，element.SubscribeUnloaded(Handler) 
-        ///         會在 element 內部透過 WeakEventManager 訂閱 Handler，形成 element → Handler 的弱引用。
+        ///         The local function Handler captures the <paramref name="element"/> variable (closure),
+        ///         creating a strong reference from Handler → element. Meanwhile, element.SubscribeUnloaded(Handler)
+        ///         subscribes to Handler internally via WeakEventManager, creating a weak reference from element → Handler.
         ///     </para>
         ///     <para>
-        ///         雖然看似循環引用，但因為其中一邊是弱引用（WeakEventManager），
-        ///         當外部移除對 Handler 的強引用時（例如透過 Dispose），
-        ///         GC 仍可正常回收這些物件，不會造成記憶體洩漏。
+        ///         Although this appears to be a circular reference, because one side is a weak reference (WeakEventManager),
+        ///         when external strong references to Handler are removed (e.g., via Dispose),
+        ///         the GC can still properly collect these objects without causing memory leaks.
         ///     </para>
         ///     <para>
-        ///         引用關係：
+        ///         Reference relationships:
         ///         <list type="bullet">
-        ///             <item>Local function Handler → element（強引用，閉包捕獲）</item>
-        ///             <item>element → Handler（弱引用，透過 WeakEventManager）</item>
-        ///             <item>Dispose() 會明確移除訂閱，確保資源釋放</item>
+        ///             <item>Local function Handler → element (strong reference, closure capture)</item>
+        ///             <item>element → Handler (weak reference, via WeakEventManager)</item>
+        ///             <item>Dispose() explicitly removes subscriptions, ensuring resource release</item>
         ///         </list>
         ///     </para>
         /// </remarks>
         private IDisposable SubscribeToUnloaded(string regionName, IRegionElement element, Action<string> onUnload)
         {
-            // Local function：處理元素卸載事件
+            // Local function: Handles element unload event
             void Handler(object sender, EventArgs e)
             {
-                // 確認元素真的離開視覺樹（避免 TabControl 切換等情況的誤判）
-                // 注意：雖然捕獲了 element，但不會造成記憶體洩漏（見上方 remarks）
+                // Confirm the element has truly left the visual tree (to avoid false positives in cases like TabControl switching)
+                // Note: Although element is captured, this does not cause memory leaks (see remarks above)
                 if (!element.IsInVisualTree())
                 {
                     Debug.WriteLine($"[RegionLifecycleManager] Region '{regionName}' element unloaded, triggering cleanup.");

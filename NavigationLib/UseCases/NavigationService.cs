@@ -7,22 +7,22 @@ using NavigationLib.Entities.Exceptions;
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    ///     導航服務的內部實作（Use Case 層）。
+    ///     Internal implementation of the navigation service (Use Case layer).
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         負責協調路徑解析、region 查找、ViewModel 呼叫等導航流程。
+    ///         Coordinates the navigation flow including path parsing, region lookup, and ViewModel invocation.
     ///     </para>
     ///     <para>
-    ///         採用 Prism 風格的事件驅動、非阻塞導航模型。
-    ///         RequestNavigate 方法立即返回，並透過 callback 回報結果。
+    ///         Adopts a Prism-style event-driven, non-blocking navigation model.
+    ///         The RequestNavigate method returns immediately and reports results via callback.
     ///     </para>
     ///     <para>
-    ///         支援延遲建立的 region（DataTemplate/ControlTemplate 情境）：
-    ///         若 region 尚未註冊或 DataContext 尚未就緒，服務會等待直至就緒或 timeout。
+    ///         Supports delayed region creation (DataTemplate/ControlTemplate scenarios):
+    ///         If a region is not yet registered or the DataContext is not ready, the service waits until ready or timeout.
     ///     </para>
     ///     <para>
-    ///         <strong>外部使用者請透過 NavigationLib.Adapters.NavigationHost (OHS) 呼叫導航功能。</strong>
+    ///         <strong>External users should call navigation functionality through NavigationLib.Adapters.NavigationHost (OHS).</strong>
     ///     </para>
     /// </remarks>
     internal static class NavigationService
@@ -30,19 +30,19 @@ namespace NavigationLib.UseCases
         private const int DefaultTimeoutMs = 10000; // 10 seconds
 
         /// <summary>
-        ///     發出非阻塞的導航請求。
+        ///     Issues a non-blocking navigation request.
         /// </summary>
-        /// <param name="path">導航路徑（例如："Shell/Level1/Level2"）。</param>
-        /// <param name="parameter">導航參數（可選）。</param>
-        /// <param name="callback">完成時的回呼（可選，null 表示 fire-and-forget）。</param>
-        /// <param name="timeoutMs">每個段落的等待超時時間（毫秒），預設為 10000 (10秒)。</param>
+        /// <param name="path">Navigation path (e.g., "Shell/Level1/Level2").</param>
+        /// <param name="parameter">Navigation parameter (optional).</param>
+        /// <param name="callback">Callback invoked upon completion (optional, null indicates fire-and-forget).</param>
+        /// <param name="timeoutMs">Timeout in milliseconds for each segment wait, default is 10000 (10 seconds).</param>
         /// <remarks>
         ///     <para>
-        ///         此方法立即返回，不會阻塞呼叫執行緒。
-        ///         導航流程在背景執行，完成時會透過 <paramref name="callback" /> 回報結果。
+        ///         This method returns immediately without blocking the calling thread.
+        ///         The navigation flow executes in the background and reports results via <paramref name="callback" />.
         ///     </para>
         ///     <para>
-        ///         若路徑驗證失敗，會立即透過 callback 回報失敗（在呼叫執行緒上同步執行 callback）。
+        ///         If path validation fails, failure is immediately reported via callback (synchronously on the calling thread).
         ///     </para>
         /// </remarks>
         public static void RequestNavigate(
@@ -51,7 +51,7 @@ namespace NavigationLib.UseCases
             Action<NavigationResult> callback = null,
             int timeoutMs = DefaultTimeoutMs)
         {
-            // 驗證路徑
+            // Validate path
             string[] segments;
 
             try
@@ -60,12 +60,12 @@ namespace NavigationLib.UseCases
             }
             catch (InvalidPathException ex)
             {
-                // 路徑無效，立即回報失敗
+                // Path is invalid, immediately report failure
                 InvokeCallback(callback, NavigationResult.CreateFailure(null, ex.Message, ex));
                 return;
             }
 
-            // 初始化導航狀態並啟動非阻塞處理
+            // Initialize navigation state and start non-blocking processing
             var state = new NavigationState
             {
                 FullPath            = path,
@@ -76,39 +76,39 @@ namespace NavigationLib.UseCases
                 TimeoutMs           = timeoutMs,
             };
 
-            // 啟動第一個段落的處理
+            // Start processing the first segment
             ProcessNextSegment(state);
         }
 
         /// <summary>
-        ///     處理下一個段落（或完成導航）。
+        ///     Processes the next segment (or completes navigation).
         /// </summary>
         private static void ProcessNextSegment(NavigationState state)
         {
             if (state.CurrentSegmentIndex >= state.Segments.Length)
             {
-                // 所有段落都已成功處理，導航完成
+                // All segments have been successfully processed, navigation complete
                 InvokeCallback(state.Callback, NavigationResult.CreateSuccess());
                 return;
             }
 
             var segmentName = state.Segments[state.CurrentSegmentIndex];
 
-            // 嘗試取得 region
+            // Try to get region
             if (RegionStore.Instance.TryGetRegion(segmentName, out var element))
             {
-                // Region 已存在，繼續處理
+                // Region already exists, continue processing
                 ProcessSegment(state, element);
             }
             else
             {
-                // Region 尚未註冊，等待註冊
+                // Region not yet registered, wait for registration
                 WaitForRegionRegistration(state, segmentName);
             }
         }
 
         /// <summary>
-        ///     等待 region 註冊（使用事件訂閱）。
+        ///     Waits for region registration (using event subscription).
         /// </summary>
         private static void WaitForRegionRegistration(NavigationState state, string segmentName)
         {
@@ -116,25 +116,25 @@ namespace NavigationLib.UseCases
             EventHandler<RegionEventArgs> handler = null;
             Timer timer = null;
 
-            // 建立事件處理器
+            // Create event handler
             handler = (sender, e) =>
             {
                 if (string.Equals(e.RegionName, segmentName, StringComparison.OrdinalIgnoreCase))
                 {
-                    // 找到目標 region
+                    // Found target region
                     if (Interlocked.Exchange(ref handlerInvoked, 1) == 0)
                     {
-                        // 清理
+                        // Cleanup
                         RegionStore.Instance.RegionRegistered -= handler;
                         timer?.Dispose();
 
-                        // 繼續處理
+                        // Continue processing
                         ProcessSegment(state, e.Element);
                     }
                 }
             };
 
-            // 建立 timeout timer
+            // Create timeout timer
             timer = new Timer(_ =>
                 {
                     if (Interlocked.Exchange(ref handlerInvoked, 1) == 0)
@@ -152,42 +152,42 @@ namespace NavigationLib.UseCases
                 state.TimeoutMs,
                 Timeout.Infinite);
 
-            // 訂閱事件
+            // Subscribe to event
             RegionStore.Instance.RegionRegistered += handler;
 
-            // 再次檢查（避免競爭條件：region 可能在訂閱前已註冊）
+            // Check again (to avoid race condition: region may have been registered before subscription)
             if (RegionStore.Instance.TryGetRegion(segmentName, out var element))
             {
                 if (Interlocked.Exchange(ref handlerInvoked, 1) == 0)
                 {
-                    // 清理
+                    // Cleanup
                     RegionStore.Instance.RegionRegistered -= handler;
                     timer.Dispose();
 
-                    // 繼續處理
+                    // Continue processing
                     ProcessSegment(state, element);
                 }
             }
         }
 
         /// <summary>
-        ///     處理單一段落：等待 DataContext、驗證 ViewModel、呼叫 OnNavigation。
+        ///     Processes a single segment: waits for DataContext, validates ViewModel, invokes OnNavigation.
         /// </summary>
         private static void ProcessSegment(NavigationState state, IRegionElement element)
         {
             var segmentName = state.Segments[state.CurrentSegmentIndex];
 
-            // 檢查 DataContext
+            // Check DataContext
             var dataContext = element.GetDataContext();
 
             if (dataContext == null)
             {
-                // DataContext 尚未設定，等待
+                // DataContext not yet set, wait
                 WaitForDataContext(state, element, segmentName);
                 return;
             }
 
-            // 驗證是否實作 INavigableViewModel
+            // Verify implementation of INavigableViewModel
             if (!(dataContext is INavigableViewModel navigableVm))
             {
                 var errorMsg = string.Format("DataContext of region '{0}' does not implement INavigableViewModel. Type: {1}",
@@ -197,7 +197,7 @@ namespace NavigationLib.UseCases
                 return;
             }
 
-            // 建立 NavigationContext
+            // Create NavigationContext
             var context = new NavigationContext(state.FullPath,
                 state.CurrentSegmentIndex,
                 segmentName,
@@ -205,7 +205,7 @@ namespace NavigationLib.UseCases
                 state.CurrentSegmentIndex == state.Segments.Length - 1,
                 state.Parameter);
 
-            // 在 UI 執行緒上呼叫 OnNavigation
+            // Invoke OnNavigation on the UI thread
             var dispatcher = element.GetDispatcher();
 
             try
@@ -216,13 +216,13 @@ namespace NavigationLib.UseCases
                     {
                         navigableVm.OnNavigation(context);
 
-                        // 成功，處理下一段
+                        // Success, process next segment
                         state.CurrentSegmentIndex++;
                         ProcessNextSegment(state);
                     }
                     catch (Exception ex)
                     {
-                        // OnNavigation 拋出例外
+                        // OnNavigation threw exception
                         var errorMsg = $"OnNavigation threw an exception at segment '{segmentName}': {ex.Message}";
 
                         InvokeCallback(state.Callback,
@@ -232,7 +232,7 @@ namespace NavigationLib.UseCases
             }
             catch (Exception ex)
             {
-                // Dispatcher.Invoke 失敗
+                // Dispatcher.Invoke failed
                 var errorMsg = $"Failed to invoke OnNavigation on UI thread for segment '{segmentName}': {ex.Message}";
 
                 InvokeCallback(state.Callback,
@@ -241,7 +241,7 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     等待 DataContext 設定（使用 DataContextChanged 事件）。
+        ///     Waits for DataContext to be set (using DataContextChanged event).
         /// </summary>
         private static void WaitForDataContext(NavigationState state, IRegionElement element, string segmentName)
         {
@@ -249,21 +249,21 @@ namespace NavigationLib.UseCases
             EventHandler handler = null;
             Timer timer = null;
 
-            // 建立事件處理器
+            // Create event handler
             handler = (sender, e) =>
             {
                 if (Interlocked.Exchange(ref handlerInvoked, 1) == 0)
                 {
-                    // 清理
+                    // Cleanup
                     element.RemoveDataContextChangedHandler(handler);
                     timer?.Dispose();
 
-                    // 重新處理此段落
+                    // Re-process this segment
                     ProcessSegment(state, element);
                 }
             };
 
-            // 建立 timeout timer
+            // Create timeout timer
             timer = new Timer(_ =>
                 {
                     if (Interlocked.Exchange(ref handlerInvoked, 1) == 0)
@@ -284,28 +284,28 @@ namespace NavigationLib.UseCases
                 state.TimeoutMs,
                 Timeout.Infinite);
 
-            // 訂閱事件
+            // Subscribe to event
             element.AddDataContextChangedHandler(handler);
 
-            // 再次檢查（避免競爭條件）
+            // Check again (to avoid race condition)
             var dataContext = element.GetDataContext();
 
             if (dataContext != null)
             {
                 if (Interlocked.Exchange(ref handlerInvoked, 1) == 0)
                 {
-                    // 清理
+                    // Cleanup
                     element.RemoveDataContextChangedHandler(handler);
                     timer.Dispose();
 
-                    // 重新處理此段落
+                    // Re-process this segment
                     ProcessSegment(state, element);
                 }
             }
         }
 
         /// <summary>
-        ///     安全地呼叫 callback。
+        ///     Safely invokes the callback.
         /// </summary>
         private static void InvokeCallback(Action<NavigationResult> callback, NavigationResult result)
         {
@@ -320,13 +320,13 @@ namespace NavigationLib.UseCases
             }
             catch (Exception ex)
             {
-                // Callback 拋出例外，記錄但不中斷流程
+                // Callback threw exception, log but don't interrupt flow
                 Debug.WriteLine("[NavigationService] Callback threw exception: {0}", ex);
             }
         }
 
         /// <summary>
-        ///     導航狀態（內部使用）。
+        ///     Navigation state (internal use).
         /// </summary>
         private class NavigationState
         {

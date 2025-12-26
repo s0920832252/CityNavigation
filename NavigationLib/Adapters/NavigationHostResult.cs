@@ -3,27 +3,27 @@ using System;
 namespace NavigationLib.Adapters
 {
     /// <summary>
-    ///     表示導航操作的結果（OHS 對外契約）。
+    ///     Represents the result of a navigation operation (returned by OHS outer layer).
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         此類別是 NavigationHost (Open Host Service) 對外公開的導航結果模型。
-    ///         所有屬性為不可變（immutable），僅能透過建構子初始化。
+    ///         This class is provided by the NavigationHost (Open Host Service) outer layer for navigation results.
+    ///         All properties are immutable and can only be initialized through the constructor.
     ///     </para>
     ///     <para>
-    ///         外部使用者透過 NavigationHost.RequestNavigate 的 callback 接收此型別，
-    ///         用於判斷導航是否成功，以及失敗時的詳細資訊。
+    ///         External consumers receive this class through the NavigationHost.RequestNavigate callback
+    ///         to determine if navigation succeeded and obtain detailed information on failures.
     ///     </para>
     /// </remarks>
     public class NavigationHostResult
     {
         /// <summary>
-        ///     初始化 NavigationHostResult 的新執行個體。
+        ///     Initializes a new instance of NavigationHostResult.
         /// </summary>
-        /// <param name="success">導航是否成功。</param>
-        /// <param name="failedAtSegment">失敗的段落名稱（成功時為 null）。</param>
-        /// <param name="errorMessage">錯誤訊息（成功時為 null）。</param>
-        /// <param name="exception">例外物件（若有）。</param>
+        /// <param name="success">Whether the navigation succeeded.</param>
+        /// <param name="failedAtSegment">The name of the failed region (null if successful).</param>
+        /// <param name="errorMessage">The error message (null if successful).</param>
+        /// <param name="exception">The exception thrown (if any).</param>
         public NavigationHostResult(
             bool success,
             string failedAtSegment,
@@ -37,32 +37,32 @@ namespace NavigationLib.Adapters
         }
 
         /// <summary>
-        ///     取得指示導航是否成功的值。
+        ///     Gets a value indicating whether the navigation succeeded.
         /// </summary>
         public bool Success { get; }
 
         /// <summary>
-        ///     取得導航失敗時的段落名稱（region 名稱）。
-        ///     若導航成功，此值為 null。
+        ///     Gets the name of the region where navigation failed.
+        ///     This value is null if navigation succeeded.
         /// </summary>
         public string FailedAtSegment { get; }
 
         /// <summary>
-        ///     取得失敗時的錯誤訊息。
-        ///     若導航成功，此值為 null。
+        ///     Gets the error message when navigation failed.
+        ///     This value is null if navigation succeeded.
         /// </summary>
         public string ErrorMessage { get; }
 
         /// <summary>
-        ///     取得導航過程中拋出的例外（若有）。
-        ///     若未發生例外，此值為 null。
+        ///     Gets the exception thrown during navigation (if any).
+        ///     This value is null if no exception occurred.
         /// </summary>
         public Exception Exception { get; }
 
         /// <summary>
-        ///     傳回代表目前物件的字串。
+        ///     Returns a string representing the current object.
         /// </summary>
-        /// <returns>包含導航結果詳細資訊的字串。</returns>
+        /// <returns>A string containing detailed information about the navigation result.</returns>
         public override string ToString()
         {
             if (Success)

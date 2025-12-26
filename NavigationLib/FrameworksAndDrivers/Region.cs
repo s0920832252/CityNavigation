@@ -6,17 +6,17 @@ using NavigationLib.UseCases;
 namespace NavigationLib.FrameworksAndDrivers
 {
     /// <summary>
-    ///     提供 Region 附加屬性，用於在 XAML 中標記 Region。
+    ///     Provides Region attached property for marking Regions in XAML.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         在 FrameworkElement 上設定 Region.Name 會在元素 Loaded 時自動註冊到 RegionStore，
-    ///         並在 Unloaded 時（確認離開視覺樹後）解除註冊。
+    ///         Setting Region.Name on a FrameworkElement will automatically register it to RegionStore when the element is Loaded,
+    ///         and unregister it when Unloaded (after confirming it has left the visual tree).
     ///     </para>
     ///     <para>
-    ///         使用 WeakEventManager 管理事件訂閱，避免記憶體洩漏。
-    ///         RegionStore 透過強引用管理 RegionElementAdapter 的生命週期，
-    ///         並由 RegionLifecycleManager 訂閱 Unloaded 事件以自動清理資源。
+    ///         Uses WeakEventManager to manage event subscriptions and avoid memory leaks.
+    ///         RegionStore manages the lifecycle of RegionElementAdapter through strong references,
+    ///         and RegionLifecycleManager subscribes to the Unloaded event to automatically clean up resources.
     ///     </para>
     /// </remarks>
     /// <example>
@@ -31,7 +31,7 @@ namespace NavigationLib.FrameworksAndDrivers
     public static class Region
     {
         /// <summary>
-        ///     Region.Name 附加屬性。
+        ///     Region.Name attached property.
         /// </summary>
         public static readonly DependencyProperty NameProperty =
             DependencyProperty.RegisterAttached("Name",
@@ -40,10 +40,10 @@ namespace NavigationLib.FrameworksAndDrivers
                 new PropertyMetadata(null, OnNameChanged));
 
         /// <summary>
-        ///     取得元素的 Region 名稱。
+        ///     Gets the Region name of an element.
         /// </summary>
-        /// <param name="element">目標元素。</param>
-        /// <returns>Region 名稱，若未設定則為 null。</returns>
+        /// <param name="element">The target element.</param>
+        /// <returns>The Region name, or null if not set.</returns>
         public static string GetName(DependencyObject element)
         {
             if (element == null)
@@ -55,10 +55,10 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     設定元素的 Region 名稱。
+        ///     Sets the Region name of an element.
         /// </summary>
-        /// <param name="element">目標元素。</param>
-        /// <param name="value">Region 名稱。</param>
+        /// <param name="element">The target element.</param>
+        /// <param name="value">The Region name.</param>
         public static void SetName(DependencyObject element, string value)
         {
             if (element == null)
@@ -70,7 +70,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     Region.Name 屬性變更時的回呼。
+        ///     Callback when Region.Name property changes.
         /// </summary>
         private static void OnNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -80,20 +80,20 @@ namespace NavigationLib.FrameworksAndDrivers
                 return;
             }
 
-            // 移除舊的事件處理器
+            // Remove old event handlers
             if (e.OldValue is string oldName && !string.IsNullOrEmpty(oldName))
             {
                 LoadedEventManager.RemoveHandler(element, OnElementLoaded);
                 UnloadedEventManager.RemoveHandler(element, OnElementUnloaded);
             }
 
-            // 若新名稱有效，註冊事件處理器
+            // If new name is valid, register event handlers
             if (e.NewValue is string newName && !string.IsNullOrEmpty(newName))
             {
                 LoadedEventManager.AddHandler(element, OnElementLoaded);
                 UnloadedEventManager.AddHandler(element, OnElementUnloaded);
 
-                // 若元素已經載入，立即註冊
+                // If element is already loaded, register immediately
                 if (element.IsLoaded)
                 {
                     RegisterRegion(element, newName);
@@ -102,7 +102,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     元素 Loaded 時的處理器。
+        ///     Handler for when element is Loaded.
         /// </summary>
         private static void OnElementLoaded(object sender, RoutedEventArgs e)
         {
@@ -120,7 +120,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     元素 Unloaded 時的處理器。
+        ///     Handler for when element is Unloaded.
         /// </summary>
         private static void OnElementUnloaded(object sender, RoutedEventArgs e)
         {
@@ -133,8 +133,8 @@ namespace NavigationLib.FrameworksAndDrivers
 
             if (!string.IsNullOrEmpty(regionName))
             {
-                // 使用 PresentationSource.FromVisual 檢查元素是否真的離開視覺樹
-                // 這避免了因 TabControl 切換等情況導致的誤解除註冊
+                // Use PresentationSource.FromVisual to check if element has truly left the visual tree
+                // This avoids false unregistration due to scenarios like TabControl switching
                 if (PresentationSource.FromVisual(element) == null)
                 {
                     UnregisterRegion(element, regionName);
@@ -147,13 +147,13 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     註冊 Region 到 RegionStore。
+        ///     Registers Region to RegionStore.
         /// </summary>
         private static void RegisterRegion(FrameworkElement element, string regionName)
         {
             try
             {
-                // 每次建立新的 adapter（RegionStore 會透過 IsSameElement 判斷是否重複）
+                // Create a new adapter each time (RegionStore will determine duplication via IsSameElement)
                 var adapter = new RegionElementAdapter(element);
                 RegionStore.Instance.Register(regionName, adapter);
                 Debug.WriteLine($"[Region] Registered region '{regionName}'.");
@@ -165,13 +165,13 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     從 RegionStore 解除註冊 Region。
+        ///     Unregisters Region from RegionStore.
         /// </summary>
         private static void UnregisterRegion(FrameworkElement element, string regionName)
         {
             try
             {
-                // 直接呼叫 Unregister（RegionStore 會處理清理）
+                // Call Unregister directly (RegionStore will handle cleanup)
                 RegionStore.Instance.Unregister(regionName);
                 Debug.WriteLine($"[Region] Unregistered region '{regionName}'.");
             }
@@ -182,7 +182,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     Loaded 事件的 WeakEventManager。
+        ///     WeakEventManager for Loaded event.
         /// </summary>
         private class LoadedEventManager : WeakEventManager
         {
@@ -257,7 +257,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     Unloaded 事件的 WeakEventManager。
+        ///     WeakEventManager for Unloaded event.
         /// </summary>
         private class UnloadedEventManager : WeakEventManager
         {

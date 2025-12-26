@@ -1,20 +1,20 @@
 namespace NavigationLib.Entities
 {
     /// <summary>
-    /// ViewModel 實作此介面以接收導航請求。
-    /// 當 NavigationService 處理路徑時，會對每個段落對應的 ViewModel 呼叫 OnNavigation。
+    /// ViewModels implement this interface to receive navigation requests.
+    /// When NavigationService processes a path, it calls OnNavigation on the ViewModel corresponding to each segment.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// 此介面是導航系統的核心契約。實作此介面的 ViewModel 將在導航流程中被呼叫，
-    /// 以便準備子視圖（例如設定 TabControl 的 SelectedIndex）並執行初始化邏輯。
+    /// This interface is the core contract of the navigation system. ViewModels implementing this interface will be called during navigation flow
+    /// to prepare child views (e.g., setting TabControl's SelectedIndex) and perform initialization logic.
     /// </para>
     /// <para>
-    /// <strong>重要注意事項：</strong>
+    /// <strong>Important Notes:</strong>
     /// <list type="bullet">
-    /// <item><description>OnNavigation 方法應為輕量且同步執行。</description></item>
-    /// <item><description>若需要長時間操作（如載入資料），應在 OnNavigation 中啟動非同步作業，而非阻塞方法。</description></item>
-    /// <item><description>此方法會在 UI 執行緒上被呼叫，因此可以安全地更新 UI 相關屬性。</description></item>
+    /// <item><description>The OnNavigation method should be lightweight and execute synchronously.</description></item>
+    /// <item><description>For long-running operations (such as loading data), start asynchronous operations within OnNavigation rather than blocking the method.</description></item>
+    /// <item><description>This method is called on the UI thread, so it is safe to update UI-related properties.</description></item>
     /// </list>
     /// </para>
     /// </remarks>
@@ -24,14 +24,14 @@ namespace NavigationLib.Entities
     /// {
     ///     public void OnNavigation(NavigationContext context)
     ///     {
-    ///         // 根據路徑段落準備子視圖
+    ///         // Prepare child views based on path segment
     ///         if (context.SegmentIndex == 0)
     ///         {
-    ///             // 這是第一個段落，可能需要設定主選單
+    ///             // This is the first segment, may need to set up main menu
     ///             PrepareMainView();
     ///         }
     ///         
-    ///         // 如果是最後一個段落，可以處理參數
+    ///         // If this is the last segment, process parameters
     ///         if (context.IsLastSegment &amp;&amp; context.Parameter != null)
     ///         {
     ///             ProcessParameter(context.Parameter);
@@ -43,18 +43,18 @@ namespace NavigationLib.Entities
     public interface INavigableViewModel
     {
         /// <summary>
-        /// 當導航到此 ViewModel 所屬的 region 時被呼叫。
+        /// Called when navigating to the region that this ViewModel belongs to.
         /// </summary>
         /// <param name="context">
-        /// 導航上下文，包含路徑資訊、段落索引、參數等。
-        /// 請參考 <see cref="NavigationContext"/> 以了解可用的屬性。
+        /// Navigation context containing path information, segment index, parameters, etc.
+        /// See <see cref="NavigationContext"/> for available properties.
         /// </param>
         /// <remarks>
         /// <para>
-        /// 此方法在 UI 執行緒上同步執行。實作時應保持輕量，避免長時間阻塞。
+        /// This method executes synchronously on the UI thread. Implementations should remain lightweight to avoid blocking.
         /// </para>
         /// <para>
-        /// 若此方法拋出例外，導航流程將中斷，並透過 NavigationResult 回報失敗。
+        /// If this method throws an exception, the navigation flow will be interrupted and failure will be reported via NavigationResult.
         /// </para>
         /// </remarks>
         void OnNavigation(NavigationContext context);

@@ -6,8 +6,8 @@ using NavigationLib.UseCases;
 namespace NavigationLib.FrameworksAndDrivers
 {
     /// <summary>
-    ///     IRegionElement 的 WPF 實作，包裝 FrameworkElement。
-    ///     訂閱元素的 Unloaded 事件，並在元素離開視覺樹時主動從 RegionStore 解除註冊。
+    ///     WPF implementation of IRegionElement, wrapping FrameworkElement.
+    ///     Subscribes to the element's Unloaded event and proactively unregisters from RegionStore when the element leaves the visual tree.
     /// </summary>
     internal class RegionElementAdapter : IRegionElement, IDisposable
     {
@@ -15,9 +15,9 @@ namespace NavigationLib.FrameworksAndDrivers
         private bool _disposed;
 
         /// <summary>
-        ///     初始化 RegionElementAdapter 的新執行個體。
+        ///     Initializes a new instance of the RegionElementAdapter class.
         /// </summary>
-        /// <param name="element">要包裝的 FrameworkElement。</param>
+        /// <param name="element">The FrameworkElement to wrap.</param>
         public RegionElementAdapter(FrameworkElement element)
         {
             Element     = element ?? throw new ArgumentNullException(nameof(element));
@@ -25,12 +25,12 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     取得包裝的 FrameworkElement。
+        ///     Gets the wrapped FrameworkElement.
         /// </summary>
         internal FrameworkElement Element { get; }
 
         /// <summary>
-        ///     釋放資源。
+        ///     Releases resources.
         /// </summary>
         public void Dispose()
         {
@@ -41,25 +41,25 @@ namespace NavigationLib.FrameworksAndDrivers
 
             _disposed = true;
 
-            // 現階段沒有需要顯式釋放的資源：
-            // - Unloaded 訂閱由 RegionLifecycleManager 管理，透過 UnloadedSubscription.Dispose() 移除
-            // - DataContextChanged 訂閱透過 WeakEventManager 管理，使用弱引用
+            // No resources require explicit disposal at this stage:
+            // - Unloaded subscription is managed by RegionLifecycleManager, removed via UnloadedSubscription.Dispose()
+            // - DataContextChanged subscription is managed via WeakEventManager using weak references
             //
-            // 保留 IDisposable 介面是為了：
-            // - 配合 RegionStore.CleanupElement 的生命週期管理
-            // - 未來若 Adapter 新增需釋放資源，可以在此集中處理
+            // The IDisposable interface is retained for:
+            // - Integration with RegionStore.CleanupElement lifecycle management
+            // - Future centralized handling if the Adapter adds resources requiring disposal
         }
 
         /// <summary>
-        ///     取得元素的 DataContext。
+        ///     Gets the element's DataContext.
         /// </summary>
-        /// <returns>DataContext 物件，若未設定則為 null。</returns>
+        /// <returns>The DataContext object, or null if not set.</returns>
         public object GetDataContext() => Element.DataContext;
 
         /// <summary>
-        ///     訂閱 DataContext 變更事件。
+        ///     Subscribes to DataContext change events.
         /// </summary>
-        /// <param name="handler">DataContext 變更時的處理常式。</param>
+        /// <param name="handler">The handler for when DataContext changes.</param>
         public void AddDataContextChangedHandler(EventHandler handler)
         {
             if (handler == null)
@@ -71,9 +71,9 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     取消訂閱 DataContext 變更事件。
+        ///     Unsubscribes from DataContext change events.
         /// </summary>
-        /// <param name="handler">要移除的處理常式。</param>
+        /// <param name="handler">The handler to remove.</param>
         public void RemoveDataContextChangedHandler(EventHandler handler)
         {
             if (handler == null)
@@ -85,22 +85,22 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     取得此元素的 Dispatcher。
+        ///     Gets the Dispatcher for this element.
         /// </summary>
-        /// <returns>IDispatcher 介面實例。</returns>
+        /// <returns>The IDispatcher interface instance.</returns>
         public IDispatcher GetDispatcher() => _dispatcher;
 
         /// <summary>
-        ///     檢查此元素是否仍在視覺樹中。
+        ///     Checks whether this element is still in the visual tree.
         /// </summary>
-        /// <returns>若元素仍在視覺樹中則為 true，否則為 false。</returns>
+        /// <returns>true if the element is still in the visual tree; otherwise, false.</returns>
         public bool IsInVisualTree() => PresentationSource.FromVisual(Element) != null;
 
         /// <summary>
-        ///     檢查此 adapter 是否與另一個 adapter 包裝相同的 FrameworkElement。
+        ///     Checks whether this adapter wraps the same FrameworkElement as another adapter.
         /// </summary>
-        /// <param name="other">要比對的另一個 Region 元素。</param>
-        /// <returns>若兩者包裝相同的 FrameworkElement 實例則為 true，否則為 false。</returns>
+        /// <param name="other">The other Region element to compare.</param>
+        /// <returns>true if both wrap the same FrameworkElement instance; otherwise, false.</returns>
         public bool IsSameElement(IRegionElement other)
         {
             if (other is RegionElementAdapter otherAdapter)
@@ -112,10 +112,10 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     訂閱元素離開視覺樹的事件。
+        ///     Subscribes to the event when the element leaves the visual tree.
         /// </summary>
-        /// <param name="handler">元素離開視覺樹時的處理常式。</param>
-        /// <returns>IDisposable 實例，用於取消訂閱。</returns>
+        /// <param name="handler">The handler for when the element leaves the visual tree.</param>
+        /// <returns>An IDisposable instance for unsubscribing.</returns>
         public IDisposable SubscribeUnloaded(EventHandler handler)
         {
             if (handler == null)
@@ -123,7 +123,7 @@ namespace NavigationLib.FrameworksAndDrivers
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            // 將 EventHandler 包裝成 WPF 的 RoutedEventHandler
+            // Wrap EventHandler as WPF's RoutedEventHandler
             EventHandler<RoutedEventArgs> routedHandler = (sender, e) => handler(sender, EventArgs.Empty);
 
             UnloadedEventManager.AddHandler(Element, routedHandler);
@@ -132,7 +132,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     封裝 Unloaded 事件訂閱的 IDisposable 實作。
+        ///     IDisposable implementation encapsulating Unloaded event subscription.
         /// </summary>
         private sealed class UnloadedSubscription : IDisposable
         {
@@ -159,7 +159,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     Unloaded 事件的 WeakEventManager。
+        ///     WeakEventManager for Unloaded event.
         /// </summary>
         private class UnloadedEventManager : WeakEventManager
         {
@@ -234,7 +234,7 @@ namespace NavigationLib.FrameworksAndDrivers
         }
 
         /// <summary>
-        ///     DataContextChanged 事件的 WeakEventManager。
+        ///     WeakEventManager for DataContextChanged event.
         /// </summary>
         private class DataContextChangedEventManager : WeakEventManager
         {
@@ -308,7 +308,7 @@ namespace NavigationLib.FrameworksAndDrivers
             protected override ListenerList NewListenerList() => new ListenerList();
 
             private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e) =>
-                // 轉發事件給所有註冊的 EventHandler（將 DependencyPropertyChangedEventArgs 包裝成 EventArgs）
+                // Forward event to all registered EventHandlers (wrap DependencyPropertyChangedEventArgs as EventArgs)
                 DeliverEventToList(sender, EventArgs.Empty, null);
         }
     }

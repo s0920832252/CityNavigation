@@ -6,15 +6,15 @@ using System.Linq;
 namespace NavigationLib.UseCases
 {
     /// <summary>
-    ///     Region 註冊事件的參數。
+    ///     Arguments for Region registration events.
     /// </summary>
     internal class RegionEventArgs : EventArgs
     {
         /// <summary>
-        ///     初始化 RegionEventArgs 的新執行個體。
+        ///     Initializes a new instance of RegionEventArgs.
         /// </summary>
-        /// <param name="regionName">Region 名稱。</param>
-        /// <param name="element">Region 元素。</param>
+        /// <param name="regionName">The Region name.</param>
+        /// <param name="element">The Region element.</param>
         public RegionEventArgs(string regionName, IRegionElement element)
         {
             RegionName = regionName;
@@ -22,39 +22,39 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     取得 Region 的名稱。
+        ///     Gets the name of the Region.
         /// </summary>
         public string RegionName { get; }
 
         /// <summary>
-        ///     取得相關的 Region 元素。
+        ///     Gets the associated Region element.
         /// </summary>
         public IRegionElement Element { get; }
     }
 
     /// <summary>
-    ///     Region 註冊中心，負責管理所有已註冊的 Region。
-    ///     使用強引用儲存 Region 元素，配合事件驅動清理機制避免記憶體洩漏。
-    ///     此類別為執行緒安全的 Singleton。
+    ///     Region registration center responsible for managing all registered Regions.
+    ///     Uses strong references to store Region elements, combined with an event-driven cleanup mechanism to prevent memory leaks.
+    ///     This class is a thread-safe Singleton.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         RegionStore 維護全域範圍內的 Region 註冊，每個名稱對應到單一活躍元素。
+    ///         RegionStore maintains Region registrations at a global scope, with each name mapping to a single active element.
     ///     </para>
     ///     <para>
-    ///         重複註冊行為：
+    ///         Duplicate registration behavior:
     ///         <list type="bullet">
     ///             <item>
-    ///                 <description>若新註冊的元素與已登記的元素為同一實例，視為 idempotent（忽略重複註冊）</description>
+    ///                 <description>If the newly registered element is the same instance as the already registered element, it is treated as idempotent (duplicate registration is ignored)</description>
     ///             </item>
     ///             <item>
-    ///                 <description>若為不同的元素，將更新註冊到新的元素，並記錄警告以協助診斷</description>
+    ///                 <description>If it is a different element, the registration will be updated to the new element, and a warning will be logged to assist with diagnostics</description>
     ///             </item>
     ///         </list>
     ///     </para>
     ///     <para>
-    ///         記憶體管理策略：使用強引用保證導航期間物件存在，但依賴 RegionElementAdapter
-    ///         訂閱 Unloaded 事件並主動通知 RegionStore 移除，避免記憶體洩漏。
+    ///         Memory management strategy: Uses strong references to guarantee object existence during navigation, but relies on RegionElementAdapter
+    ///         to subscribe to Unloaded events and actively notify RegionStore for removal, thereby preventing memory leaks.
     ///     </para>
     /// </remarks>
     internal sealed class RegionStore
@@ -74,49 +74,49 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     取得 RegionStore 的 Singleton 執行個體。
+        ///     Gets the Singleton instance of RegionStore.
         /// </summary>
         public static RegionStore Instance => _instance.Value;
 
         /// <summary>
-        ///     當 Region 註冊時發生。
+        ///     Occurs when a Region is registered.
         /// </summary>
         /// <remarks>
-        ///     此事件在 UI 執行緒或呼叫 Register 的執行緒上引發。
-        ///     訂閱者應保持處理輕量，避免阻塞。
+        ///     This event is raised on the UI thread or the thread that calls Register.
+        ///     Subscribers should keep processing lightweight to avoid blocking.
         /// </remarks>
         public event EventHandler<RegionEventArgs> RegionRegistered;
 
         /// <summary>
-        ///     當 Region 解除註冊時發生。
+        ///     Occurs when a Region is unregistered.
         /// </summary>
         /// <remarks>
-        ///     此事件在 UI 執行緒或呼叫 Unregister 的執行緒上引發。
+        ///     This event is raised on the UI thread or the thread that calls Unregister.
         /// </remarks>
         public event EventHandler<RegionEventArgs> RegionUnregistered;
 
         /// <summary>
-        ///     註冊一個 Region 元素。
+        ///     Registers a Region element.
         /// </summary>
-        /// <param name="regionName">Region 的名稱。</param>
-        /// <param name="element">要註冊的元素。</param>
+        /// <param name="regionName">The name of the Region.</param>
+        /// <param name="element">The element to register.</param>
         /// <exception cref="ArgumentNullException">
-        ///     當 <paramref name="regionName" /> 或 <paramref name="element" /> 為 null 時拋出。
+        ///     Thrown when <paramref name="regionName" /> or <paramref name="element" /> is null.
         /// </exception>
         /// <remarks>
         ///     <para>
-        ///         若 regionName 已存在：
+        ///         If regionName already exists:
         ///         <list type="bullet">
         ///             <item>
-        ///                 <description>若為相同實例，忽略（idempotent）</description>
+        ///                 <description>If it is the same instance, ignore (idempotent)</description>
         ///             </item>
         ///             <item>
-        ///                 <description>若為不同實例，更新為新實例並記錄警告</description>
+        ///                 <description>If it is a different instance, update to the new instance and log a warning</description>
         ///             </item>
         ///         </list>
         ///     </para>
         ///     <para>
-        ///         此方法會自動清理已失效的弱參考。
+        ///         This method automatically cleans up invalidated weak references.
         ///     </para>
         /// </remarks>
         public void Register(string regionName, IRegionElement element)
@@ -133,45 +133,45 @@ namespace NavigationLib.UseCases
 
             lock (_lock)
             {
-                // 檢查是否已存在
+                // Check if already exists
                 if (_regions.TryGetValue(regionName, out var existingElement))
                 {
-                    // 已存在，檢查是否為相同的底層元素
+                    // Already exists, check if it's the same underlying element
                     if (existingElement.IsSameElement(element))
                     {
-                        // 相同底層元素，忽略（idempotent）
+                        // Same underlying element, ignore (idempotent)
                         Debug.WriteLine(
                             $"[RegionStore] Region '{regionName}' already registered with the same element. Ignoring duplicate registration.");
                         return;
                     }
 
-                    // 不同底層元素，先清理舊的
+                    // Different underlying element, clean up the old one first
                     Debug.WriteLine(
                         $"[RegionStore] Warning: Region '{regionName}' is being re-registered with a different element. Updating registration.");
                     CleanupElement(regionName, existingElement);
-                } // 註冊新的
+                } // Register the new one
 
                 _regions[regionName] = element;
 
-                // 開始管理生命週期（訂閱 Unloaded 事件）
+                // Start managing lifecycle (subscribe to Unloaded event)
                 _lifecycleManager.ManageRegion(regionName, element, Unregister);
             }
 
             var eventArgs = new RegionEventArgs(regionName, element);
 
-            // 在鎖外觸發事件
+            // Raise event outside the lock
             OnRegionRegistered(eventArgs);
         }
 
         /// <summary>
-        ///     解除註冊一個 Region 元素。
+        ///     Unregisters a Region element.
         /// </summary>
-        /// <param name="regionName">Region 的名稱。</param>
+        /// <param name="regionName">The name of the Region.</param>
         /// <exception cref="ArgumentNullException">
-        ///     當 <paramref name="regionName" /> 為 null 時拋出。
+        ///     Thrown when <paramref name="regionName" /> is null.
         /// </exception>
         /// <remarks>
-        ///     此方法會停止管理 region 的生命週期並清理資源。
+        ///     This method stops managing the region's lifecycle and cleans up resources.
         /// </remarks>
         public void Unregister(string regionName)
         {
@@ -193,7 +193,7 @@ namespace NavigationLib.UseCases
                 }
             }
 
-            // 在鎖外觸發事件
+            // Raise event outside the lock
             if (shouldRaiseEvent)
             {
                 OnRegionUnregistered(eventArgs);
@@ -201,13 +201,13 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     嘗試取得已註冊的 Region 元素。
+        ///     Attempts to retrieve a registered Region element.
         /// </summary>
-        /// <param name="regionName">Region 的名稱。</param>
-        /// <param name="element">若找到，則為對應的元素；否則為 null。</param>
-        /// <returns>若找到且元素仍然存活，則為 true；否則為 false。</returns>
+        /// <param name="regionName">The name of the Region.</param>
+        /// <param name="element">If found, the corresponding element; otherwise null.</param>
+        /// <returns>True if found and the element is still alive; otherwise false.</returns>
         /// <exception cref="ArgumentNullException">
-        ///     當 <paramref name="regionName" /> 為 null 時拋出。
+        ///     Thrown when <paramref name="regionName" /> is null.
         /// </exception>
         public bool TryGetRegion(string regionName, out IRegionElement element)
         {
@@ -231,9 +231,9 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     取得目前已註冊的所有 Region 名稱（用於測試/診斷）。
+        ///     Gets all currently registered Region names (for testing/diagnostics).
         /// </summary>
-        /// <returns>已註冊的 Region 名稱集合。</returns>
+        /// <returns>A collection of registered Region names.</returns>
         internal IEnumerable<string> GetRegisteredRegionNames()
         {
             lock (_lock)
@@ -244,20 +244,20 @@ namespace NavigationLib.UseCases
 
 
         /// <summary>
-        ///     清理 region 元素與相關資源。
+        ///     Cleans up a region element and associated resources.
         /// </summary>
         /// <remarks>
-        ///     此方法應在鎖內呼叫。
+        ///     This method should be called within a lock.
         /// </remarks>
         private void CleanupElement(string regionName, IRegionElement element)
         {
-            // 停止管理生命週期（取消 Unloaded 訂閱）
+            // Stop managing lifecycle (unsubscribe from Unloaded)
             _lifecycleManager.StopManaging(regionName);
 
-            // 從字典移除
+            // Remove from dictionary
             _regions.Remove(regionName);
 
-            // 清理 adapter
+            // Clean up adapter
             if (element is IDisposable disposable)
             {
                 disposable.Dispose();
@@ -267,15 +267,15 @@ namespace NavigationLib.UseCases
         }
 
         /// <summary>
-        ///     引發 RegionRegistered 事件。
+        ///     Raises the RegionRegistered event.
         /// </summary>
-        /// <param name="e">事件參數。</param>
+        /// <param name="e">Event arguments.</param>
         private void OnRegionRegistered(RegionEventArgs e) => RegionRegistered?.Invoke(this, e);
 
         /// <summary>
-        ///     引發 RegionUnregistered 事件。
+        ///     Raises the RegionUnregistered event.
         /// </summary>
-        /// <param name="e">事件參數。</param>
+        /// <param name="e">Event arguments.</param>
         private void OnRegionUnregistered(RegionEventArgs e) => RegionUnregistered?.Invoke(this, e);
     }
 }

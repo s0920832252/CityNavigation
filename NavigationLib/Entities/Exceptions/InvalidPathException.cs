@@ -4,31 +4,31 @@ using System.Runtime.Serialization;
 namespace NavigationLib.Entities.Exceptions
 {
     /// <summary>
-    /// 當導航路徑無效時拋出的例外。
+    /// Exception thrown when a navigation path is invalid.
     /// </summary>
     /// <remarks>
-    /// 路徑無效的情況包括：
+    /// Invalid path conditions include:
     /// <list type="bullet">
-    /// <item><description>路徑為 null 或空字串</description></item>
-    /// <item><description>路徑段落包含無效字元（不符合 [a-zA-Z0-9_-]+ 模式）</description></item>
-    /// <item><description>路徑格式錯誤（例如包含連續的斜線）</description></item>
+    /// <item><description>Path is null or empty string</description></item>
+    /// <item><description>Path segments contain invalid characters (not matching [a-zA-Z0-9_-]+ pattern)</description></item>
+    /// <item><description>Path format is incorrect (e.g., contains consecutive slashes)</description></item>
     /// </list>
     /// </remarks>
     [Serializable]
     public class InvalidPathException : Exception
     {
         /// <summary>
-        /// 取得導致例外的無效路徑。
+        /// Gets the invalid path that caused the exception.
         /// </summary>
         public string Path { get; }
 
         /// <summary>
-        /// 取得路徑無效的原因描述。
+        /// Gets the description of why the path is invalid.
         /// </summary>
         public string Reason { get; }
 
         /// <summary>
-        /// 初始化 InvalidPathException 的新執行個體。
+        /// Initializes a new instance of InvalidPathException.
         /// </summary>
         public InvalidPathException()
             : base("The navigation path is invalid.")
@@ -36,29 +36,29 @@ namespace NavigationLib.Entities.Exceptions
         }
 
         /// <summary>
-        /// 使用指定的錯誤訊息初始化 InvalidPathException 的新執行個體。
+        /// Initializes a new instance of InvalidPathException with the specified error message.
         /// </summary>
-        /// <param name="message">說明錯誤的訊息。</param>
+        /// <param name="message">The message that describes the error.</param>
         public InvalidPathException(string message)
             : base(message)
         {
         }
 
         /// <summary>
-        /// 使用指定的錯誤訊息和內部例外初始化 InvalidPathException 的新執行個體。
+        /// Initializes a new instance of InvalidPathException with the specified error message and inner exception.
         /// </summary>
-        /// <param name="message">說明錯誤的訊息。</param>
-        /// <param name="innerException">造成目前例外的例外。</param>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that caused this exception.</param>
         public InvalidPathException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
         /// <summary>
-        /// 使用指定的路徑和原因初始化 InvalidPathException 的新執行個體。
+        /// Initializes a new instance of InvalidPathException with the specified path and reason.
         /// </summary>
-        /// <param name="path">無效的導航路徑。</param>
-        /// <param name="reason">路徑無效的原因。</param>
+        /// <param name="path">The invalid navigation path.</param>
+        /// <param name="reason">The reason why the path is invalid.</param>
         public InvalidPathException(string path, string reason)
             : base(FormatMessage(path, reason))
         {
@@ -67,10 +67,10 @@ namespace NavigationLib.Entities.Exceptions
         }
 
         /// <summary>
-        /// 使用序列化資料初始化 InvalidPathException 的新執行個體。
+        /// Initializes a new instance of InvalidPathException with serialization data.
         /// </summary>
-        /// <param name="info">SerializationInfo，包含序列化物件資料。</param>
-        /// <param name="context">StreamingContext，包含來源和目的端的內容資訊。</param>
+        /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
+        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
         protected InvalidPathException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -79,10 +79,10 @@ namespace NavigationLib.Entities.Exceptions
         }
 
         /// <summary>
-        /// 設定 SerializationInfo，包含例外的相關資料。
+        /// Sets the SerializationInfo with information about the exception.
         /// </summary>
-        /// <param name="info">SerializationInfo，用於存放序列化物件資料。</param>
-        /// <param name="context">StreamingContext，包含來源和目的端的內容資訊。</param>
+        /// <param name="info">The SerializationInfo that holds the serialized object data.</param>
+        /// <param name="context">The StreamingContext that contains contextual information about the source or destination.</param>
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

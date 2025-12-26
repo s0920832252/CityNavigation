@@ -5,28 +5,28 @@ using NavigationLib.Adapters;
 namespace NavigationLib.FrameworksAndDrivers
 {
     /// <summary>
-    ///     IDispatcher 的 WPF 實作，包裝 System.Windows.Threading.Dispatcher。
+    ///     WPF implementation of IDispatcher, wrapping System.Windows.Threading.Dispatcher.
     /// </summary>
     internal class DispatcherAdapter : IDispatcher
     {
         private readonly Dispatcher _dispatcher;
 
         /// <summary>
-        ///     初始化 DispatcherAdapter 的新執行個體。
+        ///     Initializes a new instance of the DispatcherAdapter class.
         /// </summary>
-        /// <param name="dispatcher">要包裝的 WPF Dispatcher。</param>
+        /// <param name="dispatcher">The WPF Dispatcher to wrap.</param>
         public DispatcherAdapter(Dispatcher dispatcher) => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
         /// <summary>
-        ///     檢查當前執行緒是否為 UI 執行緒。
+        ///     Checks whether the current thread is the UI thread.
         /// </summary>
-        /// <returns>若當前執行緒可存取 UI，則為 true；否則為 false。</returns>
+        /// <returns>true if the current thread has access to the UI; otherwise, false.</returns>
         public bool CheckAccess() => _dispatcher.CheckAccess();
 
         /// <summary>
-        ///     在 UI 執行緒上同步執行指定的動作。
+        ///     Synchronously executes the specified action on the UI thread.
         /// </summary>
-        /// <param name="action">要執行的動作。</param>
+        /// <param name="action">The action to execute.</param>
         public void Invoke(Action action)
         {
             if (action == null)
@@ -36,20 +36,20 @@ namespace NavigationLib.FrameworksAndDrivers
 
             if (_dispatcher.CheckAccess())
             {
-                // 已在 UI 執行緒，直接執行
+                // Already on UI thread, execute directly
                 action();
             }
             else
             {
-                // 調度到 UI 執行緒
+                // Dispatch to UI thread
                 _dispatcher.Invoke(action);
             }
         }
 
         /// <summary>
-        ///     在 UI 執行緒上非同步執行指定的動作。
+        ///     Asynchronously executes the specified action on the UI thread.
         /// </summary>
-        /// <param name="action">要執行的動作。</param>
+        /// <param name="action">The action to execute.</param>
         public void BeginInvoke(Action action)
         {
             if (action == null)

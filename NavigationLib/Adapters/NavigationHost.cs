@@ -8,19 +8,19 @@ namespace NavigationLib.Adapters
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         NavigationHost 是對外暴露的導航服務入口（Adapter 層），
-    ///         遵循 Clean Architecture / CADDD 的 Open Host Service 模式。
+    ///         NavigationHost is the outer service layer, injecting interfaces to the Adapter layer,
+    ///         conforming to the Open Host Service concept in Clean Architecture / CADDD.
     ///     </para>
     ///     <para>
-    ///         外部使用者應使用此類別進行導航，而非直接存取內部的 Use Case 實作。
+    ///         External consumers should use this service rather than directly depending on the inner Use Case layer.
     ///     </para>
     ///     <para>
-    ///         採用 Prism 風格的事件驅動、非阻塞導航模型。
-    ///         RequestNavigate 方法立即返回，並透過 callback 回報結果。
+    ///         Follows Prism's pattern of asynchronous navigation with callback services.
+    ///         The RequestNavigate method returns immediately, with results delivered via callback.
     ///     </para>
     ///     <para>
-    ///         支援延遲建立的 region（DataTemplate/ControlTemplate 情境）：
-    ///         若 region 尚未註冊或 DataContext 尚未就緒，服務會等待直至就緒或 timeout。
+    ///         Warning: For lazily-created regions (via DataTemplate/ControlTemplate):
+    ///         If a region's DataContext is attached with delay, this may cause timeout or wait until a very short time before timing out.
     ///     </para>
     /// </remarks>
     /// <example>
@@ -45,19 +45,19 @@ namespace NavigationLib.Adapters
         private const int DefaultTimeoutMs = 10000;
 
         /// <summary>
-        ///     發出非阻塞的導航請求。
+        ///     Issues a non-blocking navigation request.
         /// </summary>
-        /// <param name="path">導航路徑（例如："Shell/Level1/Level2"）。</param>
-        /// <param name="parameter">導航參數（可選）。</param>
-        /// <param name="callback">完成時的回呼（可選，null 表示 fire-and-forget）。</param>
-        /// <param name="timeoutMs">每個段落的等待超時時間（毫秒），預設為 10000 (10秒)。</param>
+        /// <param name="path">Navigation path (e.g., "Shell/Level1/Level2").</param>
+        /// <param name="parameter">Navigation parameter (optional).</param>
+        /// <param name="callback">Callback invoked upon completion (optional, null indicates fire-and-forget).</param>
+        /// <param name="timeoutMs">Timeout in milliseconds for each segment wait, default is 10000 (10 seconds).</param>
         /// <remarks>
         ///     <para>
-        ///         此方法立即返回，不會阻塞呼叫執行緒。
-        ///         導航流程在背景執行，完成時會透過 <paramref name="callback" /> 回報結果。
+        ///         This method returns immediately without blocking the calling thread.
+        ///         The navigation flow executes in the background and reports results via <paramref name="callback" />.
         ///     </para>
         ///     <para>
-        ///         若路徑驗證失敗，會立即透過 callback 回報失敗（在呼叫執行緒上同步執行 callback）。
+        ///         If path validation fails, failure is immediately reported via callback (synchronously on the calling thread).
         ///     </para>
         /// </remarks>
         public static void RequestNavigate(
@@ -66,7 +66,7 @@ namespace NavigationLib.Adapters
             Action<NavigationHostResult> callback = null,
             int timeoutMs = DefaultTimeoutMs)
         {
-            // 建立橋接 callback，將內部的 NavigationResult 轉換為對外的 NavigationHostResult
+            // Create inner callback to convert NavigationResult to NavigationHostResult
             Action<NavigationResult> innerCallback = null;
 
             if (callback != null)

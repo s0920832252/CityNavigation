@@ -23,7 +23,7 @@ namespace NavigationDemo.ViewModels
         public ControlPanelViewModel()
         {
             NavigateCommand = new DelegateCommand(OnNavigate);
-            LastResult = "請使用下方按鈕開始導覽...";
+            LastResult = "Please use the buttons below to start navigation...";
         }
 
         private void OnNavigate(object parameter)
@@ -46,11 +46,11 @@ namespace NavigationDemo.ViewModels
                     
                     if (result.Success)
                     {
-                        LastResult = $"✓ Success: {path}\n完成時間: {duration:F0}ms";
+                        LastResult = $"✓ Success: {path}\nCompleted in: {duration:F0}ms";
                     }
                     else
                     {
-                        LastResult = $"✗ Failed: {result.ErrorMessage}\n失敗位置: '{result.FailedAtSegment}'\n耗時: {duration:F0}ms";
+                        LastResult = $"✗ Failed: {result.ErrorMessage}\nFailed at: '{result.FailedAtSegment}'\nDuration: {duration:F0}ms";
                     }
                 },
                 timeoutMs: 10000
